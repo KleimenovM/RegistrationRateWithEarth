@@ -57,8 +57,38 @@ def calculate_attenuation(source: Source, telescope: Telescope, tf: Transmission
     @param tf:
     @return:
     """
+    print(source.info())
+
     # angles sample to describe the source's trajectory
-    phi_sample = np.linspace(0, np.pi, angular_precision)
+    psi_sample = np.linspace(0, np.pi, angular_precision)
+    vec, theta = telescope.get_orbit_parametrization(source, psi_sample)
+    d_theta = 1 / angular_precision
+
+    # energy sample do describe the spectrum
+    n = 200
+    e_sample = 10**(np.linspace(3, 10, n))
+    initial_flux = source.flux_on_energy_function(e_sample)
+
+    plt.plot(e_sample, initial_flux)
+    plt.xscale('log')
+    plt.show()
+
+    # start averaging
+    total_flux_matrix_emu = np.zeros([angular_precision, n])
+    total_flux_matrix_tau = np.zeros([angular_precision, n])
+
+    for i, t_i in enumerate(theta):
+        zenith_i = np.pi/2 - t_i
+        if zenith_i < np.pi / 2:  # if there's no attenuation
+            total_flux_matrix_emu[i] = initial_flux
+            total_flux_matrix_tau[i] = initial_flux
+            continue
+        total_flux_matrix_emu[i] = tf.convolution(zenith_i, initial_flux, nuFate_method=1)
+        total_flux_matrix_tau[i] = tf.convolution(zenith_i, initial_flux, nuFate_method=2)
+
+    total_flux_emu = total_flux_matrix_emu.mean(axis=0)
+    total_flux_tau = total_flux_matrix_tau.mean(axis=0)
+    print(total_flux_emu.shape)
 
     return 0, 0
 

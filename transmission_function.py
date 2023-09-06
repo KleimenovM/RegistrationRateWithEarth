@@ -21,6 +21,7 @@ class TransmissionFunction:
         # angle and log_energy axis
         self.angles = np.linspace(theta_min, theta_max, self.m)
         self.lg_energy = np.linspace(lg_e_min, lg_e_max, self.n)
+        self.e = 10**self.lg_energy
         # regeneration functions
         self.no_regen_function = None
         self.with_regen_function = None
@@ -56,7 +57,7 @@ class TransmissionFunction:
         tf = transmission_functions[nuFate_method]
 
         # calculate final flux for each angle
-        grid_x, grid_y, grid_z = np.meshgrid(angle, e, e, indexing='ij')
+        grid_x, grid_y, grid_z = np.meshgrid(angle, self.e, self.e, indexing='ij')
         grid = np.array([grid_x, grid_y, grid_z]).T
 
         angle_transmission = tf(grid).T[0]
@@ -64,7 +65,7 @@ class TransmissionFunction:
         input_spectrum_matrix_a = np.repeat(input_spectrum, self.n).reshape(self.n, self.n).T
         product = np.dot(input_spectrum_matrix_a, angle_transmission)
 
-        return simpson(product, 10 ** self.lg_energy, axis=0)
+        return integration_method(product, self.e, axis=0) * 1e-10
 
 
 if __name__ == '__main__':
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     ang = transmission_function.angles[10]
     energy_flux_matrix = (10 ** e) ** (-1.36)
 
-    final = transmission_function.convolution(ang, energy_flux_matrix) * 1e-10
+    final = transmission_function.convolution(ang, energy_flux_matrix)
 
     plt.plot(10**e, final, label='final flux')
     plt.plot(10**e, energy_flux_matrix, label='initial flux')
