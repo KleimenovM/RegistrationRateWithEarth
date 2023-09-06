@@ -123,7 +123,7 @@ def main():
             att_matrices[2][j, i] = att_with_regeneration_tau
 
     # save the file as an .npy
-    np.save("data_mod", att_matrices)
+    np.save("data/data_mod", att_matrices)
     return
 
 

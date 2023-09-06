@@ -1,16 +1,19 @@
 # Neutrino through Earth propagation
 # Telescope class description
+import numpy as np
 
 from source import Source
-from tools import *
+from tools import sph_coord, rot_matrix
 
 
 class Telescope:
     """
     This class describes a typical neutrino telescope
     """
-    def __init__(self, latitude: float):
+    def __init__(self, name: str, latitude: float, ef_area_table: np.ndarray):
+        self.name = name
         self.phi = latitude
+        self.ef_area_table = ef_area_table
 
     # reconstruction properties
     def get_orbit_parametrization(self, source: Source, psi: np.ndarray):

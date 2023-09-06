@@ -1,16 +1,17 @@
 # Neutrino through Earth propagation
 # Source class description
 
-
-from tools import *
+import numpy as np
+from tools import deg_to_rad
 
 
 class Source:
     """
     This class describes a typical stellar neutrino source
     """
-    def __init__(self, declination_angle: float, k0: float, gamma: float, e_cut=None, beta=None):
+    def __init__(self, name: str, declination_angle: float, k0: float, gamma: float, e_cut=None, beta=None):
         # position parameter
+        self.name = name
         self.delta = declination_angle
 
         # spectrum parameters
@@ -30,8 +31,13 @@ class Source:
         return self.k0 * (energy / 1000)**(-self.gamma)
 
 
-def set_a_source(line: np.ndarray):
-    return
+def set_a_source(line) -> Source:
+    return Source(name=line['Source'],
+                  declination_angle=deg_to_rad([line['delta']]),
+                  k0=line['k0'],
+                  gamma=line['gamma'],
+                  e_cut=line['e_cut'],
+                  beta=line['beta'])
 
 
 if __name__ == '__main__':

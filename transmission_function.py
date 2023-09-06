@@ -16,7 +16,7 @@ class TransmissionFunction:
         # load data.npy file
         self.table_data = np.load("data/data_mod.npy")
         # energies and angles boundaries
-        theta_min, theta_max, self.m = 0, np.pi / 2, 180
+        theta_min, theta_max, self.m = np.pi / 2, np.pi, 180
         lg_e_min, lg_e_max, self.n = 3, 10, 200
         # angle and log_energy axis
         self.angles = np.linspace(theta_min, theta_max, self.m)
@@ -41,6 +41,7 @@ class TransmissionFunction:
         self.no_regen_function = interp3d(xyz, no_regeneration, method="linear")
         self.with_regen_function = interp3d(xyz, with_regeneration, method="linear")
         self.tau_regen_function = interp3d(xyz, tau_regeneration, method="linear")
+        pass
 
     def convolution(self, angle, input_spectrum, integration_method=trapezoid, nuFate_method=0):
         """
@@ -74,11 +75,11 @@ if __name__ == '__main__':
     ang = transmission_function.angles[10]
     energy_flux_matrix = (10 ** e) ** (-1.36)
 
-    final = transmission_function.convolution(ang, energy_flux_matrix)
+    final = transmission_function.convolution(ang, energy_flux_matrix) * 1e-10
 
     plt.plot(10**e, final, label='final flux')
-    plt.plot(10 ** e, energy_flux_matrix, label='initial flux')
-    plt.plot(10 ** e, final / energy_flux_matrix, label='ratio')
+    plt.plot(10**e, energy_flux_matrix, label='initial flux')
+    plt.plot(10**e, final / energy_flux_matrix, label='ratio')
     plt.xscale('log')
     # plt.yscale('log')
     plt.legend()
