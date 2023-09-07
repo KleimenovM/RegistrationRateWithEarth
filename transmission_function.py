@@ -16,12 +16,12 @@ class TransmissionFunction:
         # load data.npy file
         self.table_data = np.load("data/data_mod.npy")
         # energies and angles boundaries
-        theta_min, theta_max, self.m = np.pi / 2, np.pi, 180
+        theta_min, theta_max, self.m = 0, -np.pi/2, 180
         lg_e_min, lg_e_max, self.n = 3, 10, 200
         # angle and log_energy axis
         self.angles = np.linspace(theta_min, theta_max, self.m)
         self.lg_energy = np.linspace(lg_e_min, lg_e_max, self.n)
-        self.e = 10**self.lg_energy
+        self.energy = 10 ** self.lg_energy
         # regeneration functions
         self.no_regen_function = None
         self.with_regen_function = None
@@ -57,7 +57,7 @@ class TransmissionFunction:
         tf = transmission_functions[nuFate_method]
 
         # calculate final flux for each angle
-        grid_x, grid_y, grid_z = np.meshgrid(angle, self.e, self.e, indexing='ij')
+        grid_x, grid_y, grid_z = np.meshgrid(angle, self.lg_energy, self.lg_energy, indexing='ij')
         grid = np.array([grid_x, grid_y, grid_z]).T
 
         angle_transmission = tf(grid).T[0]
@@ -65,7 +65,7 @@ class TransmissionFunction:
         input_spectrum_matrix_a = np.repeat(input_spectrum, self.n).reshape(self.n, self.n).T
         product = np.dot(input_spectrum_matrix_a, angle_transmission)
 
-        return integration_method(product, self.e, axis=0) * 1e-10
+        return integration_method(product, self.energy, axis=0) / (self.energy[-1] - self.energy[0])
 
 
 if __name__ == '__main__':
