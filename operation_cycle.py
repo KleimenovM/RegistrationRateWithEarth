@@ -114,6 +114,8 @@ def eff_area_step(total_relative_spectrum_function, zenith: float, telescope: Te
     return relative_spectrum * effective_area
 
 
+
+
 def calculate_single_theta_flux(initial_flux: np.ndarray, zenith: float,
                                 telescope: Telescope, tf: TransmissionFunction,
                                 nuFate_method: int, mid_border: float = 1., low_border: float = -1.):
