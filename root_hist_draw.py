@@ -36,7 +36,7 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
 
     for i, n in enumerate(source_numbers):
         source = sources[n]
-        hist_simple = create_hist_from_array(energy, simple_reg[i], "1")
+        hist_simple = create_hist_from_array(energy, simple_reg[i], sources[n].name)
         hist_complex = create_hist_from_array(energy, reg[i], "2")
 
         simple_integral = np.round(np.sum(hist_simple) * 14, 3)
@@ -57,9 +57,10 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
         text = add_text()
 
         if i == 0:
-            hist_complex.Draw("hist")
-            hist_simple.Draw("same hist")
-            text.DrawLatexNDC(0.25, 0.85, '#delta=' + str(np.round(source.declination, 2)))
+            hist_simple.Draw("hist")
+            hist_complex.Draw("same hist")
+            text.DrawLatexNDC(0.25, 0.85, '#delta = ' + str(np.round(source.declination, 2))
+                              + ', ' + ' #Gamma = ' + str(source.gamma))
         else:
             hist_complex.Draw("same hist")
 

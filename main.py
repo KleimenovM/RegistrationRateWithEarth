@@ -1,6 +1,6 @@
 # Evaluates average high-energy neutrino spectral attenuation
 # for specific sources listed in "data/sources_table.csv"
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 from root_hist_draw import draw_root_hist
@@ -39,6 +39,8 @@ def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
                                           telescope, tf, nuFate_method=2,
                                           mid_border=mid_border, low_border=low_border)
 
+    plt.show()
+
     total_flux_emu = total_flux_matrix_emu.mean(axis=0)
     total_flux_tau = total_flux_matrix_tau.mean(axis=0)
 
@@ -68,7 +70,7 @@ def main():
     tf = TransmissionFunction()
 
     angular_precision = 180
-    source_numbers = [5]
+    source_numbers = [10]
 
     ref_energy = telescope.energy
     d_lg_e = telescope.lg_energy[1] - telescope.lg_energy[0]

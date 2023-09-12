@@ -39,7 +39,7 @@ class TransmissionFunction:
         transmission_table = self.table_data[nuFate_method]
 
         j = self.angles[self.angles > angle].size - 1
-        t = angle - self.angles[j] / (self.angles[j + 1] - self.angles[j])
+        t = (angle - self.angles[j]) / (self.angles[j + 1] - self.angles[j])
 
         transmission_matrix = transmission_table[j] * (1 - t) + transmission_table[j + 1] * t
 
@@ -71,15 +71,7 @@ class TransmissionFunction:
         if angle >= 0:
             return input_spectrum
 
-        # transmission_functions = (self.no_regen_function, self.with_regen_function, self.tau_regen_function)
-        # tf = transmission_functions[nuFate_method]
-
-        # calculate final flux for each angle
-        # grid_x, grid_y, grid_z = np.meshgrid(angle, self.lg_energy, self.lg_energy, indexing='ij')
-        # grid = np.array([grid_x, grid_y, grid_z]).T
-
-        angle_transmission = self.angle_interpolated_matrix(angle, nuFate_method)  # tf(grid).T[0]
-
+        angle_transmission = self.angle_interpolated_matrix(angle, nuFate_method)
         product = np.dot(input_spectrum, angle_transmission)
 
         return product
