@@ -25,17 +25,14 @@ class Source:
 
     def info(self):
         print(f"{self.name}, declination: {self.delta}")
-        print(f"k0 = {self.k0}, gamma = {self.gamma}")
+        print(f"k0 = {self.k0} GeV-1 s-1 m-2, gamma = {self.gamma}")
         if self.e_cut and self.beta:
-            print(f"e_cut: {self.e_cut}, beta: {self.beta}")
+            print(f"e_cut: {self.e_cut} GeV, beta: {self.beta}")
         pass
-
-    def get_trajectory_length(self):
-        return 2 * np.pi * np.cos(self.delta)
 
     def flux_on_energy_function(self, energy):
         # exponential cutoff
-        if self.e_cut and self.beta:
+        if self.e_cut != np.nan and self.beta:
             return self.k0 * (energy / 1000) ** (-self.gamma) * np.exp(-(energy / self.e_cut) ** self.beta)
 
         # just a polynomial spectrum
@@ -45,7 +42,7 @@ class Source:
 def set_a_source(line) -> Source:
     return Source(name=line['Source'],
                   declination_angle=deg_to_rad([line['delta']]),  # deg to rad
-                  k0=line['k0'] * 1e-10,  # TeV-1 s-1 cm-2 to GeV-1 s-1 m-2
+                  k0=line['k0'] * 1e-11 * 1e4 * 1e-3,  # TeV-1 s-1 cm-2 to GeV-1 s-1 m-2
                   gamma=line['gamma'],
                   e_cut=line['e_cut'] * 1e3,  # TeV to GeV
                   beta=line['beta'])

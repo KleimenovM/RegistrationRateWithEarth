@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 
 def deg_to_rad(deg: list):
     result = .0
-    for i, a in enumerate(deg):
+    for i in range(len(deg)):
         result += deg[i] / (60 ** i) / 180 * np.pi
     return result
 
@@ -24,6 +24,13 @@ def sph_coord(r, theta, phi):
     return x, y, z
 
 
+def smart_division(a, b):
+    good_indices = (b != 0.)
+    result = np.zeros(b.size)
+    result[good_indices] = a[good_indices] / b[good_indices]
+    return result
+
+
 def extrapolating_spline(x, x0, y0, if_delta=False):
     if if_delta:
         spline = interp1d(np.log10(x0), y0, kind='linear', fill_value='extrapolate')
@@ -35,4 +42,4 @@ def extrapolating_spline(x, x0, y0, if_delta=False):
 
 
 if __name__ == '__main__':
-    "Not for direct use"
+    print("Not for direct use")

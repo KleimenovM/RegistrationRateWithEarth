@@ -15,6 +15,7 @@ class Telescope:
         self.name = name
         self.phi = latitude
         self.ef_area_table = ef_area_table
+        self.lg_energy = None
         self.energy = None
         self.ef_area = None
         self.simple_effective_area()
@@ -28,8 +29,15 @@ class Telescope:
         theta = np.arcsin(vec[2])
         return vec, theta
 
+    def source_available_time(self, source):
+        m = 1000
+        vec, theta = self.get_orbit_parametrization(source, m)
+        theta_good = theta < - np.pi / 6
+        return np.sum(theta_good) / m
+
     def simple_effective_area(self, angle_precision: int = 180):
-        self.energy = self.ef_area_table[0] + self.ef_area_table[1] / 2  # middle of the bin
+        self.lg_energy = self.ef_area_table[0]  # + self.ef_area_table[1] / 2  # middle of the bin
+        self.energy = 10**self.lg_energy
         value = self.ef_area_table[2]  # ef_area value
 
         zenith_parametrization = np.linspace(-np.pi/2, np.pi/2, angle_precision)
@@ -39,12 +47,10 @@ class Telescope:
         border_angle = -np.pi/6
 
         for i, z in enumerate(zenith_parametrization):
-            if z > border_angle:
-                continue
-            else:
+            if z < border_angle:
                 ef_area_parametrization[i] = value
 
-        xy = (zenith_parametrization, self.energy)
+        xy = (zenith_parametrization, self.lg_energy)
 
         self.ef_area = interp2d(xy, ef_area_parametrization, method='linear')
         pass

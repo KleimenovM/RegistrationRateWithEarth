@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
 
+from tools import smart_division
 from telescope import Telescope
 from transmission_function import TransmissionFunction
 
@@ -65,7 +67,7 @@ def convoluted_flux(initial_flux: np.ndarray, zenith: float,
     @return:
     """
     convoluted = tf.convolution(zenith, initial_flux, nuFate_method=nuFate_method)
-    return convoluted / initial_flux
+    return smart_division(convoluted, initial_flux)
 
 
 def interpolated_flux(relative_flux: np.ndarray, tf: TransmissionFunction,
@@ -80,7 +82,7 @@ def interpolated_flux(relative_flux: np.ndarray, tf: TransmissionFunction,
     """
     # Step 2. Extrapolation
     de = tf.lg_energy[1] - tf.lg_energy[0]
-    e_mid = 10**(np.arange(mid_border, tf.energy[0], de))
+    e_mid = 10**(np.arange(mid_border, tf.lg_energy[0], de))
     mid_e_extrapolation = attenuation_extrapolation(tf.lg_energy, relative_flux, t00=mid_border)
 
     e_low = 10**(np.arange(low_border, mid_border, de))
@@ -102,18 +104,17 @@ def eff_area_step(total_relative_spectrum_function, zenith: float, telescope: Te
     @return:
     """
     # 3.1. Data generation from interpolated values
+    lg_energy = telescope.lg_energy
     energy = telescope.energy
     relative_spectrum = total_relative_spectrum_function(energy)
 
     # 3.2. Multiplication with effective area
-    grid_x, grid_y = np.meshgrid(zenith, energy, indexing='ij')
+    grid_x, grid_y = np.meshgrid(zenith, lg_energy, indexing='ij')
     grid = np.array([grid_x, grid_y]).T
 
     effective_area = telescope.ef_area(grid).T[0]
 
     return relative_spectrum * effective_area
-
-
 
 
 def calculate_single_theta_flux(initial_flux: np.ndarray, zenith: float,
