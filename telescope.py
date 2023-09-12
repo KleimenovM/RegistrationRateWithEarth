@@ -1,10 +1,11 @@
 # Neutrino through Earth propagation
 # Telescope class description
 import numpy as np
+import ROOT as rt
 from scipy.interpolate import RegularGridInterpolator as interp2d
 
 from source import Source
-from tools import sph_coord, rot_matrix
+from tools import deg_to_rad, sph_coord, rot_matrix
 
 
 class Telescope:
@@ -54,6 +55,39 @@ class Telescope:
 
         self.ef_area = interp2d(xy, ef_area_parametrization, method='linear')
         pass
+
+    def get_energy_bins(self):
+        n = self.energy.size
+        bins = np.zeros(n+1)
+        bins[:n] = self.energy
+        bins[n] = 10**(self.lg_energy[-1] + self.ef_area_table[1][-1])
+        return bins
+
+
+def get_telescope(name: str, latitude: list, filename: str, histname: str = "hnu") -> Telescope:
+    """
+    Returns a telescope with given name, declination and source of effective area
+    @param name: string with the telesope's name
+    @param latitude: [deg, mins, secs] - telescope's latitude
+    @param filename: path to the file with effective area data
+    @param histname: name of the histogram with effective area data
+    @return:
+    """
+    f = rt.TFile(filename, "read")
+    hist = f.Get(histname)
+    n = len(hist)
+
+    # low_end, width, value
+    data: np.ndarray = np.zeros([3, n])
+
+    for i in range(n):
+        data[0, i] = hist.GetBinLowEdge(i)  # low level
+        data[1, i] = hist.GetBinWidth(i)  # bin width
+        data[2, i] = hist.GetBinContent(i)  # bin average value
+
+    return Telescope(name=name,
+                     latitude=deg_to_rad(latitude),
+                     ef_area_table=data)
 
 
 if __name__ == '__main__':

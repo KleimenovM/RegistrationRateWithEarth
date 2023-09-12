@@ -2,62 +2,12 @@
 # for specific sources listed in "data/sources_table.csv"
 
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import ROOT as rt
 
-from tools import deg_to_rad, smart_division
-from transmission_function import TransmissionFunction
-from source import Source, set_a_source
-from telescope import Telescope
+from root_hist_draw import draw_root_hist
 from single_theta_flux import calculate_single_theta_flux
-
-
-def get_sources(filename: str) -> list[Source]:
-    """
-    This function provides parameters of neutrino sources
-    k0 (TeV-1 cm-2 s-1) [into standard * 1e4]
-    gamma (no dim)
-    e_cut (TeV)
-    beta (no dim)
-    @param filename:
-    @return:
-    """
-    data = pd.read_csv(filename, sep=',')
-
-    sources = []
-    for i in range(data.shape[0]):
-        line_i = data.T[i].loc[['Source', 'delta', 'k0', 'gamma', 'e_cut', 'beta']]
-        source_i: Source = set_a_source(line_i)
-        sources.append(source_i)
-
-    return sources
-
-
-def get_telescope(name: str, latitude: list, filename: str, histname: str = "hnu") -> Telescope:
-    """
-    Returns a telescope with given name, declination and source of effective area
-    @param name: string with the telesope's name
-    @param latitude: [deg, mins, secs] - telescope's latitude
-    @param filename: path to the file with effective area data
-    @param histname: name of the histogram with effective area data
-    @return:
-    """
-    f = rt.TFile(filename, "read")
-    hist = f.Get(histname)
-    n = len(hist)
-
-    # low_end, width, value
-    data: np.ndarray = np.zeros([3, n])
-
-    for i in range(n):
-        data[0, i] = hist.GetBinLowEdge(i)  # low level
-        data[1, i] = hist.GetBinWidth(i)  # bin width
-        data[2, i] = hist.GetBinContent(i)  # bin average value
-
-    return Telescope(name=name,
-                     latitude=deg_to_rad(latitude),
-                     ef_area_table=data)
+from source import get_sources
+from telescope import Telescope, get_telescope
+from transmission_function import TransmissionFunction
 
 
 def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
@@ -118,7 +68,7 @@ def main():
     tf = TransmissionFunction()
 
     angular_precision = 180
-    source_numbers = [7]
+    source_numbers = [5]
 
     ref_energy = telescope.energy
     d_lg_e = telescope.lg_energy[1] - telescope.lg_energy[0]
@@ -143,13 +93,11 @@ def main():
 
     year_seconds = 3600 * 24 * 365
 
-    for i in range(len(source_numbers)):
-        plt.scatter(ref_energy, registered[i] * initial[i] * year_seconds * de)
-        plt.scatter(ref_energy, simply_registered[i] * initial[i] * year_seconds * de, 10)
-        print(smart_division(registered[i], simply_registered[i]))
-    plt.xscale('log')
-    plt.show()
+    print(telescope.lg_energy)
 
+    for i in range(len(source_numbers)):
+        draw_root_hist(sources, source_numbers, telescope.get_energy_bins(),
+                       simply_registered * initial[i] * de * year_seconds, registered * initial[i] * de * year_seconds)
     return
 
 

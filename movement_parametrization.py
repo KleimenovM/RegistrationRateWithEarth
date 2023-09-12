@@ -3,9 +3,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from tools import *
-from telescope import Telescope
+
+from telescope import get_telescope
 from source import Source
+from tools import deg_to_rad, sph_coord, rot_matrix
 
 
 def plot_a_sphere(axis: plt.axis, rotation_angle: float):
@@ -70,7 +71,7 @@ if __name__ == '__main__':
 	baikal_latitude = deg_to_rad([51, 46])  # 51 46' N to rad
 	declinations = [[-28.87, 0]]  # -28.87 deg (Galactic Center)
 
-	t = Telescope(baikal_latitude)
+	t = get_telescope("Baikal", [51, 46], "data/eff_area.root")
 
 	fig = plt.figure(figsize=(12, 6))
 
@@ -86,10 +87,10 @@ if __name__ == '__main__':
 	ax2.set_ylabel(r'$\theta,\ rad$')
 
 	for d in declinations:
-		s_i = Source(deg_to_rad(d), .0, .0)
+		s_i = Source(deg_to_rad(d), .0, .0, .0)
 
 		psi_sample = np.linspace(0, 2 * np.pi, 1000)
-		vec1, theta1 = t.get_orbit_parametrization(source=s_i, psi=psi_sample)
+		vec1, theta1 = t.get_orbit_parametrization(source=s_i, angular_precision=1000)
 
 		ax.scatter(vec1[0], vec1[1], vec1[2], label='Galactic center')
 

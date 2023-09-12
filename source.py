@@ -2,6 +2,7 @@
 # Source class description
 
 import numpy as np
+import pandas as pd
 from tools import deg_to_rad
 
 
@@ -13,7 +14,8 @@ class Source:
     def __init__(self, name: str, declination_angle: float, k0: float, gamma: float, e_cut=None, beta=None):
         # position parameter
         self.name = name
-        self.delta = declination_angle
+        self.delta = declination_angle  # rad
+        self.declination = np.round(np.rad2deg(self.delta), 2)
 
         # spectrum parameters
         self.k0 = k0  # 1e-11 TeV-1 s-1 cm-2
@@ -46,6 +48,27 @@ def set_a_source(line) -> Source:
                   gamma=line['gamma'],
                   e_cut=line['e_cut'] * 1e3,  # TeV to GeV
                   beta=line['beta'])
+
+
+def get_sources(filename: str) -> list[Source]:
+    """
+    This function provides parameters of neutrino sources
+    k0 (TeV-1 cm-2 s-1) [into standard * 1e4]
+    gamma (no dim)
+    e_cut (TeV)
+    beta (no dim)
+    @param filename:
+    @return:
+    """
+    data = pd.read_csv(filename, sep=',')
+
+    sources = []
+    for i in range(data.shape[0]):
+        line_i = data.T[i].loc[['Source', 'delta', 'k0', 'gamma', 'e_cut', 'beta']]
+        source_i: Source = set_a_source(line_i)
+        sources.append(source_i)
+
+    return sources
 
 
 if __name__ == '__main__':
