@@ -53,6 +53,9 @@ class TransmissionFunction:
         @param nuFate_method: 0 -> cascades only, 1 -> secondaries included, 2-> tau neutrinos
         @return: numpy array (self.n) - attenuated flux on energy dependence
         """
+        if angle > 0:
+            return input_spectrum
+
         transmission_functions = (self.no_regen_function, self.with_regen_function, self.tau_regen_function)
         tf = transmission_functions[nuFate_method]
 
