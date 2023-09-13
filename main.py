@@ -5,9 +5,31 @@ import numpy as np
 
 from root_hist_draw import draw_root_hist
 from single_theta_flux import calculate_single_theta_flux
-from source import get_sources
-from telescope import Telescope, get_telescope
+from source import get_sources, Source
+from telescope import Telescope, get_simple_telescope, get_complex_telescope
 from transmission_function import TransmissionFunction
+
+
+def get_Baikal() -> Telescope:
+    filenames = []
+    angles = []
+    p = 0.0
+    filenames.append(f"data/eff_area/eff_area_{0.0}_{0.1}.root")
+    angles.append(0.0)
+    while p < 0.99:
+        p_0_wr = np.round(p, 1)
+        p_1_wr = np.round(p + .1, 1)
+        filenames.append(f"data/eff_area/eff_area_{p_0_wr}_{p_1_wr}.root")
+        angle_p = -np.mean((np.arcsin(p), np.arcsin(p + 0.1)))
+        angles.append(angle_p)
+        p += .1
+    filenames.append(filenames[-1])
+    angles.append(-np.pi/2)
+
+    return get_complex_telescope(name='BaikalGVD',
+                                 latitude=[51, 46],
+                                 filenames=filenames,
+                                 angles=angles)
 
 
 def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
@@ -64,42 +86,45 @@ def main():
     sources = get_sources("data/source_table.csv")
 
     # Baikal-GVD telescope 51◦46′N 104◦24'E
-    telescope = get_telescope("Baikal", [51, 46], "data/eff_area.root")
+    telescope1 = get_simple_telescope("BaikalGVD", [51, 46], "data/eff_area.root")
+    telescope2 = get_Baikal()
 
     # Earth transmission function calculated with nuFate
     tf = TransmissionFunction()
 
     angular_precision = 180
-    source_numbers = [10]
+    source_numbers = [5]
 
-    ref_energy = telescope.energy
-    d_lg_e = telescope.lg_energy[1] - telescope.lg_energy[0]
-    de = 10 ** (telescope.lg_energy + d_lg_e) - ref_energy
+    ref_energy = telescope1.energy
+    d_lg_e = telescope1.lg_energy[1] - telescope1.lg_energy[0]
+    de = 10 ** (telescope1.lg_energy + d_lg_e) - ref_energy
 
-    initial, simply_registered, registered = [], [], []
+    initial, double_simple_r, simply_registered, registered = [], [], [], []
     for sn in source_numbers:
-        # source = Source(name="Test1", declination_angle=-np.pi/2, k0=0.1, gamma=2)
+        # source = Source(name="Test1", declination_angle=-np.pi/2, k0=0.1, gamma=3)
         source = sources[sn]  # take one source from the list
         print(source.info())
 
-        zenith_angles = telescope.get_orbit_parametrization(source, angular_precision)[1]
+        zenith_angles = telescope1.get_orbit_parametrization(source, angular_precision)[1]
         initial_flux = source.flux_on_energy_function(tf.energy)
 
         ref_initial_flux = source.flux_on_energy_function(ref_energy)
-        emu_at, tau_at = get_relative_flux(initial_flux, zenith_angles, telescope, tf)
-        rel_flux_r = get_simple_relative_flux(zenith_angles, telescope)
+        emu_at1, tau_at1 = get_relative_flux(initial_flux, zenith_angles, telescope2, tf)
+        rel_flux_r1 = get_simple_relative_flux(zenith_angles, telescope1)
+        rel_flux_r2 = get_simple_relative_flux(zenith_angles, telescope2)
 
         initial.append(ref_initial_flux)
-        simply_registered.append(rel_flux_r)
-        registered.append(2/3 * emu_at + 1/3 * tau_at)
+        simply_registered.append(rel_flux_r2)
+        double_simple_r.append(rel_flux_r1)
+        registered.append(2/3 * emu_at1 + 1/3 * tau_at1)
 
     year_seconds = 3600 * 24 * 365
 
-    print(telescope.lg_energy)
-
     for i in range(len(source_numbers)):
-        draw_root_hist(sources, source_numbers, telescope.get_energy_bins(),
-                       simply_registered * initial[i] * de * year_seconds, registered * initial[i] * de * year_seconds)
+        draw_root_hist(sources, source_numbers, telescope1.get_energy_bins(),
+                       double_simple_r * initial[i] * de * year_seconds,
+                       simply_registered * initial[i] * de * year_seconds,
+                       registered * initial[i] * de * year_seconds)
     return
 
 

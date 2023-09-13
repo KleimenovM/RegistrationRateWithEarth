@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from telescope import get_telescope
+from telescope import get_simple_telescope
 from source import Source
 from tools import deg_to_rad, sph_coord, rot_matrix
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 	baikal_latitude = deg_to_rad([51, 46])  # 51 46' N to rad
 	declinations = [[-28.87, 0]]  # -28.87 deg (Galactic Center)
 
-	t = get_telescope("Baikal", [51, 46], "data/eff_area.root")
+	t = get_simple_telescope("Baikal", [51, 46], "data/eff_area.root")
 
 	fig = plt.figure(figsize=(12, 6))
 
