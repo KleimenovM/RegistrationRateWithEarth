@@ -38,7 +38,7 @@ class Telescope:
     def source_available_time(self, source):
         m = 1000
         vec, theta = self.get_orbit_parametrization(source, m)
-        theta_good = theta < - np.pi / 6
+        theta_good = theta < 0
         return np.sum(theta_good) / m
 
     def simple_effective_area(self, angle_precision: int = 180):
@@ -77,15 +77,8 @@ class Telescope:
 
         xy = (mod_angles, self.lg_energy)
 
-        self.ef_area = interp2d(xy, mod_values, method='nearest')
+        self.ef_area = interp2d(xy, mod_values + 1e-15, method='linear')
         pass
-
-    def get_energy_bins(self):
-        n = self.energy.size
-        bins = np.zeros(n+1)
-        bins[:n] = self.energy
-        bins[n] = 10**(self.lg_energy[-1] + self.ef_area_table[1][-1])
-        return bins
 
 
 def get_simple_telescope(name: str, latitude: list, filename: str, histname: str = "hnu") -> Telescope:

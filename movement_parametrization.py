@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from telescope import get_simple_telescope
-from source import Source
+from source import get_sources
 from tools import deg_to_rad, sph_coord, rot_matrix
 
 
@@ -69,7 +69,9 @@ def plot_a_sphere(axis: plt.axis, rotation_angle: float):
 
 if __name__ == '__main__':
 	baikal_latitude = deg_to_rad([51, 46])  # 51 46' N to rad
-	declinations = [[-28.87, 0]]  # -28.87 deg (Galactic Center)
+	source_numbers = [0, 1, 2, 3, 5, 6, 9, 10]
+
+	sources = get_sources("data/source_table.csv")
 
 	t = get_simple_telescope("Baikal", [51, 46], "data/eff_area.root")
 
@@ -86,16 +88,19 @@ if __name__ == '__main__':
 	ax2.set_xlabel(r'$\psi,\ rad$')
 	ax2.set_ylabel(r'$\theta,\ rad$')
 
-	for d in declinations:
-		s_i = Source(deg_to_rad(d), .0, .0, .0)
+	psi_sample = np.linspace(0, 2 * np.pi, 180)
 
-		psi_sample = np.linspace(0, 2 * np.pi, 1000)
-		vec1, theta1 = t.get_orbit_parametrization(source=s_i, angular_precision=1000)
+	for n in source_numbers:
+		s_i = sources[n]
+		print(s_i.info())
 
-		ax.scatter(vec1[0], vec1[1], vec1[2], label='Galactic center')
+		vec1, theta1 = t.get_orbit_parametrization(source=s_i, angular_precision=180)
+
+		ax.plot(vec1[0], vec1[1], vec1[2], label=s_i.name)
 
 		ax2.plot(psi_sample, theta1)
 
+	ax2.plot(psi_sample, np.ones(psi_sample.size) * (-0.5))
 	ax.legend()
 	plt.tight_layout()
 	# plt.savefig("vis.png")

@@ -37,7 +37,6 @@ def check_transmission_function():
         att_tabular = smart_division(tf.convolution(a_j, spectrum, 1), spectrum)
         att_tabular_tau = smart_division(tf.convolution(a_j, spectrum, 2), spectrum)
 
-
         plt.subplot(2, 1, 1)
 
         plt.plot(energy, att_with_regeneration, color='royalblue', alpha=0.5)
