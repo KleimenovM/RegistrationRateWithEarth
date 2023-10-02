@@ -64,12 +64,15 @@ def plot_a_sphere(axis: plt.axis, rotation_angle: float):
 	vec_vert2 = np.dot(rm, vec_vert)
 	axis.plot(vec_vert2[0], vec_vert2[1], vec_vert2[2], color='black', linewidth=2, linestyle='dashed')
 
+	axis.scatter(0, 0, color='black')
+
 	return
 		
 
 if __name__ == '__main__':
 	baikal_latitude = deg_to_rad([51, 46])  # 51 46' N to rad
 	source_numbers = [0, 1, 2, 3, 5, 6, 9, 10]
+	remove_label = [0, 0, 0, 1, 0, 1, 0, 1]
 
 	sources = get_sources("data/source_table.csv")
 
@@ -85,22 +88,27 @@ if __name__ == '__main__':
 	ax.axis('off')
 
 	ax2.plot((0, 2 * np.pi), (0, 0), color='black')
-	ax2.set_xlabel(r'$\psi,\ rad$')
-	ax2.set_ylabel(r'$\theta,\ rad$')
+	ax2.set_xlabel(r'$\psi,\ rad$', fontsize=12)
+	ax2.set_ylabel(r'$\theta,\ rad$', fontsize=12)
 
-	psi_sample = np.linspace(0, 2 * np.pi, 180)
+	psi_sample = np.linspace(0, 2 * np.pi, 90)
 
-	for n in source_numbers:
+	for i, n in enumerate(source_numbers):
 		s_i = sources[n]
 		print(s_i.info())
 
-		vec1, theta1 = t.get_orbit_parametrization(source=s_i, angular_precision=180)
+		vec1, theta1 = t.get_orbit_parametrization(source=s_i, angular_precision=90)
 
-		ax.plot(vec1[0], vec1[1], vec1[2], label=s_i.name)
+		name = s_i.name
+		if remove_label[i] == 1:
+			name = s_i.name[:-3]
+
+		ax.scatter(vec1[0], vec1[1], vec1[2], label=name)
 
 		ax2.plot(psi_sample, theta1)
 
-	ax2.plot(psi_sample, np.ones(psi_sample.size) * (-0.5))
+	ax2.grid(color='gray', linestyle='dashed')
+
 	ax.legend()
 	plt.tight_layout()
 	# plt.savefig("vis.png")

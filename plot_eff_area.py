@@ -9,42 +9,47 @@ from telescope import get_simple_telescope
 def draw_eff_area():
 
     t = get_Baikal()
-    t2 = get_simple_telescope("BaikalGVD", [51, 46], "data/eff_area.root")
 
     m, n = t.angles.size, t.lg_energy.size
 
     a = np.linspace(-np.pi/2, 0, m)
-    print(a)
     lg_e, e = t.lg_energy, t.energy
 
     xv = np.array(np.meshgrid(a, lg_e, indexing='ij')).T
     f_xv = t.ef_area(xv).T
 
-    canvas = rt.TCanvas()
-    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m, np.linspace(-11*np.pi/20, 0, m+1))
+    canvas = rt.TCanvas("c", "c", 800, 600)
+    canvas.SetLeftMargin(.13)
+    canvas.SetBottomMargin(.1)
+    canvas.SetRightMargin(.05)
+
+    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m-1, np.linspace(-np.pi/2, 0, m))
 
     for i, a_i in enumerate(a):
         for j, e_j in enumerate(e):
-            hist.Fill(e_j, a_i - np.pi/20, f_xv[i, j])
+            hist.Fill(e_j, a_i, f_xv[i, j] + 5e-9)
 
-    yv = np.array(np.meshgrid(-np.pi/2, lg_e, indexing='ij')).T
-    f_yv = t2.ef_area(yv).T
-
-    hist2 = rt.TH2F("Title2", "Title2", n - 1, e, m, np.linspace(-11 * np.pi / 20, 0, m + 1))
-
-    for j, e_j in enumerate(e):
-        hist2.Fill(e_j, -np.pi/40, f_yv[0, j])
-
-    hist2.SetFillColor(rt.kRed)
+    size = .04
 
     hist.GetXaxis().SetTitle("E, GeV")
+    hist.GetXaxis().SetTitleSize(size)
+    hist.GetXaxis().SetLabelSize(size)
+    hist.GetXaxis().SetTitleOffset(1.8)
+
     hist.GetYaxis().SetTitle("#theta, rad")
+    hist.GetYaxis().SetTitleSize(size)
+    hist.GetYaxis().SetLabelSize(size)
+    hist.GetYaxis().SetTitleOffset(1.8)
+
+    hist.GetZaxis().SetTitle("A_{ef}, m^{2}")
+    hist.GetZaxis().SetTitleSize(size)
+    hist.GetZaxis().SetLabelSize(size)
+    hist.GetZaxis().SetTitleOffset(1.2)
 
     rt.gStyle.SetOptStat(0)
     hist.Draw("LEGO2")
-    hist2.Draw("same LEGO")
     canvas.SetLogx()
-    # canvas.SetLogz()
+    canvas.SetLogz()
 
     input("Enter any symbol to quit: ")
 

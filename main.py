@@ -10,7 +10,7 @@ from telescope import Telescope, get_simple_telescope, get_complex_telescope
 from transmission_function import TransmissionFunction
 
 
-def get_Baikal() -> Telescope:
+def get_Baikal(latitude=(51, 46)) -> Telescope:
     filenames = []
     angles = []
     p = 0.0
@@ -27,7 +27,7 @@ def get_Baikal() -> Telescope:
     angles.append(-np.pi/2)
 
     return get_complex_telescope(name='BaikalGVD',
-                                 latitude=[51, 46],
+                                 latitude=latitude,
                                  filenames=filenames,
                                  angles=angles)
 
@@ -86,7 +86,7 @@ def main():
     sources = get_sources("data/source_table.csv")
 
     # Baikal-GVD telescope 51◦46′N 104◦24'E
-    telescope1 = get_simple_telescope("BaikalGVD", [51, 46], "data/eff_area.root")
+    telescope1 = get_simple_telescope("BaikalGVD", latitude=[51, 46], filename="data/eff_area.root")
     telescope2 = get_Baikal()
 
     # Earth transmission function calculated with nuFate
@@ -100,7 +100,7 @@ def main():
 
     year_seconds = 3600 * 24 * 365
 
-    source_numbers = [10, 11]
+    source_numbers = [11, 10]
 
     initial, double_simple_r, simply_registered, registered = [], [], [], []
     for sn in source_numbers:
@@ -109,7 +109,7 @@ def main():
         print(source.info())
         print(telescope2.source_available_time(source))
 
-        zenith_angles = telescope1.get_orbit_parametrization(source, angular_precision)[1]
+        zenith_angles = telescope2.get_orbit_parametrization(source, angular_precision)[1]
         initial_flux = source.flux_on_energy_function(tf.energy)
 
         ref_initial_flux = source.flux_on_energy_function(ref_energy)

@@ -11,11 +11,13 @@ class Source:
     This class describes a typical stellar neutrino source
     """
 
-    def __init__(self, name: str, declination_angle: float, k0: float, gamma: float, e_cut=None, beta=None):
+    def __init__(self, name: str, declination_angle: float, right_ascension_time: float,
+                 k0: float, gamma: float, e_cut=None, beta=None):
         # position parameter
         self.name = name
         self.delta = declination_angle  # rad
         self.declination = np.round(np.rad2deg(self.delta), 2)
+        self.right_ascension = right_ascension_time
 
         # spectrum parameters
         self.k0 = k0  # 1e-11 TeV-1 s-1 cm-2
@@ -44,6 +46,7 @@ class Source:
 def set_a_source(line) -> Source:
     return Source(name=line['Source'],
                   declination_angle=deg_to_rad([line['delta']]),  # deg to rad
+                  right_ascension_time=line['RA'],
                   k0=line['k0'] * 1e-11 * 1e4 * 1e-3,  # TeV-1 s-1 cm-2 to GeV-1 s-1 m-2
                   gamma=line['gamma'],
                   e_cut=line['e_cut'] * 1e3,  # TeV to GeV
@@ -64,7 +67,7 @@ def get_sources(filename: str) -> list[Source]:
 
     sources = []
     for i in range(data.shape[0]):
-        line_i = data.T[i].loc[['Source', 'delta', 'k0', 'gamma', 'e_cut', 'beta']]
+        line_i = data.T[i].loc[['Source', 'delta', 'RA', 'k0', 'gamma', 'e_cut', 'beta']]
         source_i: Source = set_a_source(line_i)
         sources.append(source_i)
 
