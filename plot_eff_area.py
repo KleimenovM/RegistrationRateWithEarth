@@ -19,11 +19,11 @@ def draw_eff_area():
     f_xv = t.ef_area(xv).T
 
     canvas = rt.TCanvas("c", "c", 800, 600)
-    canvas.SetLeftMargin(.13)
+    canvas.SetLeftMargin(.1)
     canvas.SetBottomMargin(.1)
-    canvas.SetRightMargin(.05)
+    canvas.SetRightMargin(.18)
 
-    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m-1, np.linspace(-np.pi/2, 0, m))
+    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m-1, a)
 
     for i, a_i in enumerate(a):
         for j, e_j in enumerate(e):
@@ -34,12 +34,12 @@ def draw_eff_area():
     hist.GetXaxis().SetTitle("E, GeV")
     hist.GetXaxis().SetTitleSize(size)
     hist.GetXaxis().SetLabelSize(size)
-    hist.GetXaxis().SetTitleOffset(1.8)
+    hist.GetXaxis().SetTitleOffset(1.2)
 
     hist.GetYaxis().SetTitle("#theta, rad")
     hist.GetYaxis().SetTitleSize(size)
     hist.GetYaxis().SetLabelSize(size)
-    hist.GetYaxis().SetTitleOffset(1.8)
+    hist.GetYaxis().SetTitleOffset(1.2)
 
     hist.GetZaxis().SetTitle("A_{ef}, m^{2}")
     hist.GetZaxis().SetTitleSize(size)
@@ -47,7 +47,7 @@ def draw_eff_area():
     hist.GetZaxis().SetTitleOffset(1.2)
 
     rt.gStyle.SetOptStat(0)
-    hist.Draw("LEGO2")
+    hist.Draw("colz")
     canvas.SetLogx()
     canvas.SetLogz()
 

@@ -24,7 +24,9 @@ def check_transmission_function():
                                                    pure_spectrum=False)
     plt.figure(figsize=(10, 6))
 
-    for j in range(0, len(angles), 5):
+    matrix = np.zeros([180, 200])
+
+    for j in range(0, len(angles)):
         a_j = angles[j]
         z_j = np.pi / 2 - angles[j]
         att_with_regeneration = get_att_value_secs(w2, v2, ci2,

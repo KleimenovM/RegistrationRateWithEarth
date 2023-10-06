@@ -25,12 +25,6 @@ class TransmissionFunction:
         self.angles = np.linspace(theta_min, theta_max, self.m)
         self.lg_energy = np.linspace(lg_e_min, lg_e_max, self.n)
         self.energy = 10 ** self.lg_energy
-        # regeneration functions
-        self.no_regen_function = None
-        self.with_regen_function = None
-        self.tau_regen_function = None
-        # interpolation
-        self.interpolated_table()
 
     def angle_interpolated_matrix(self, angle: float, nuFate_method: int):
         if angle >= 0:
@@ -42,23 +36,7 @@ class TransmissionFunction:
         t = (angle - self.angles[j]) / (self.angles[j + 1] - self.angles[j])
 
         transmission_matrix = transmission_table[j] * (1 - t) + transmission_table[j + 1] * t
-
         return transmission_matrix
-
-    def interpolated_table(self):
-        """
-        Interpolates tabular data (calculated with nuFate)
-        """
-        xyz = (self.angles, self.lg_energy, self.lg_energy)
-
-        no_regeneration = self.table_data[0]
-        with_regeneration = self.table_data[1]
-        tau_regeneration = self.table_data[2]
-
-        self.no_regen_function = interp3d(xyz, no_regeneration, method="linear")
-        self.with_regen_function = interp3d(xyz, with_regeneration, method="linear")
-        self.tau_regen_function = interp3d(xyz, tau_regeneration, method="linear")
-        pass
 
     def convolution(self, angle, input_spectrum, nuFate_method: int):
         """

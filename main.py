@@ -100,7 +100,7 @@ def main():
 
     year_seconds = 3600 * 24 * 365
 
-    source_numbers = [11, 10]
+    source_numbers = [0]
 
     initial, double_simple_r, simply_registered, registered = [], [], [], []
     for sn in source_numbers:
