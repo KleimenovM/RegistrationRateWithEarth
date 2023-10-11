@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import ROOT as rt
 from scipy.interpolate import RegularGridInterpolator as interp2d
+from scipy.interpolate import interp1d
 
 from source import Source
 from tools import deg_to_rad, sph_coord, rot_matrix
@@ -13,7 +14,7 @@ class Telescope:
     """
     This class describes a typical neutrino telescope
     """
-    def __init__(self, name: str, latitude: float, ef_area_table: np.ndarray, angles=None):
+    def __init__(self, name: str, latitude: float, ef_area_table: np.ndarray, brd_angle=None, angles=None):
         self.name = name
         self.phi = latitude
         self.ef_area_table = ef_area_table
@@ -21,6 +22,11 @@ class Telescope:
         self.energy = None
         self.ef_area = None
         self.angles = angles
+        if brd_angle is None:
+            self.brd_angle = np.pi/6
+        else:
+            self.brd_angle = brd_angle
+
         if self.angles:
             self.complex_effective_area()
         else:
@@ -38,7 +44,7 @@ class Telescope:
     def source_available_time(self, source):
         m = 1000
         vec, theta = self.get_orbit_parametrization(source, m)
-        theta_good = theta < 0
+        theta_good = theta < -self.brd_angle
         return np.sum(theta_good) / m
 
     def simple_effective_area(self, angle_precision: int = 180):
@@ -50,7 +56,7 @@ class Telescope:
         ef_area_parametrization = np.zeros([angle_precision, value.size])
 
         # simple method: if zenith angle < border angle, ef. area = 0
-        border_angle = -np.pi/6
+        border_angle = -self.brd_angle  # typically np.pi / 6
 
         for i, z in enumerate(zenith_parametrization):
             if z < border_angle:
@@ -81,9 +87,11 @@ class Telescope:
         pass
 
 
-def get_simple_telescope(name: str, latitude: list, filename: str, histname: str = "hnu") -> Telescope:
+def get_simple_telescope(name: str, latitude: list, brd_angle,
+                         filename: str, histname: str = "hnu") -> Telescope:
     """
     Returns a telescope with given name, declination and source of effective area
+    @param brd_angle:
     @param name: string with the telescope's name
     @param latitude: [degrees, minutes, seconds] - telescope's latitude
     @param filename: path to the file with effective area data
@@ -104,7 +112,33 @@ def get_simple_telescope(name: str, latitude: list, filename: str, histname: str
 
     return Telescope(name=name,
                      latitude=deg_to_rad(latitude),
-                     ef_area_table=data)
+                     ef_area_table=data,
+                     brd_angle=deg_to_rad(brd_angle))
+
+
+def get_simple_telescope_from_txt(name: str, latitude: list, filename: str, brd_angle: list):
+    """
+    Returns a telescope with given name, declination and source of effective area
+    @param brd_angle: ef. area cut angle
+    @param name: string with the telescope's name
+    @param latitude: [degrees, minutes, seconds] - telescope's latitude
+    @param filename: path to the file with effective area data
+    @return:
+    """
+    lg_e, lg_area = np.loadtxt(filename, skiprows=1, unpack=True)
+
+    lg_e_indices = np.argsort(lg_e)
+    lg_e, lg_area = lg_e[lg_e_indices], lg_area[lg_e_indices]
+
+    f_a = interp1d(lg_e, lg_area)
+
+    lg_e_ref = np.linspace(min(lg_e), 6, 10000)
+    lg_a_ref = f_a(lg_e_ref)
+
+    return Telescope(name=name,
+                     latitude=deg_to_rad(latitude),
+                     ef_area_table=np.array([lg_e_ref, lg_e_ref, 10**lg_a_ref]),
+                     brd_angle=deg_to_rad(brd_angle))
 
 
 def get_complex_telescope(name: str, latitude: list[int],

@@ -6,30 +6,31 @@ import numpy as np
 from root_hist_draw import draw_root_hist
 from single_theta_flux import calculate_single_theta_flux
 from source import get_sources, Source
-from telescope import Telescope, get_simple_telescope, get_complex_telescope
+from telescope import Telescope, get_simple_telescope, get_complex_telescope, get_simple_telescope_from_txt
 from transmission_function import TransmissionFunction
 
 
-def get_Baikal(latitude=(51, 46)) -> Telescope:
+def get_Baikal(folder: str, latitude: list = (51, 46), name_addition: str = "") -> Telescope:
     filenames = []
     angles = []
     p = 0.0
-    filenames.append(f"data/eff_area/eff_area_{0.0}_{0.1}.root")
+    filenames.append(f"{folder}/eff_area_{0.0}_{0.1}.root")
     angles.append(0.0)
     while p < 0.99:
         p_0_wr = np.round(p, 1)
         p_1_wr = np.round(p + .1, 1)
-        filenames.append(f"data/eff_area/eff_area_{p_0_wr}_{p_1_wr}.root")
+        filenames.append(f"{folder}/eff_area_{p_0_wr}_{p_1_wr}.root")
         angle_p = -np.mean((np.arcsin(p), np.arcsin(p + 0.1)))
         angles.append(angle_p)
         p += .1
     filenames.append(filenames[-1])
-    angles.append(-np.pi/2)
+    angles.append(-np.pi / 2)
 
-    return get_complex_telescope(name='BaikalGVD',
+    return get_complex_telescope(name='BaikalGVD' + name_addition,
                                  latitude=latitude,
                                  filenames=filenames,
-                                 angles=angles)
+                                 angles=angles,
+                                 histname="hnu_trigger")
 
 
 def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
@@ -81,50 +82,76 @@ def get_simple_relative_flux(theta: np.ndarray, telescope: Telescope):
     return avg_reg_rate
 
 
+def one_telescope_full_cycle(source: Source,
+                             tf: TransmissionFunction,
+                             telescope: Telescope,
+                             simple: bool = False,
+                             angular_precision: int = 180):
+    zenith_angles = telescope.get_orbit_parametrization(source, angular_precision)[1]
+
+    print(f"{telescope.name}: {telescope.source_available_time(source)}")
+
+    ref_energy = telescope.energy
+    d_lg_e = telescope.lg_energy[1] - telescope.lg_energy[0]
+    de = 10 ** (telescope.lg_energy + d_lg_e) - ref_energy
+
+    ref_initial_flux = source.flux_on_energy_function(ref_energy)
+
+    if simple:
+        rel_flux = get_simple_relative_flux(zenith_angles, telescope)
+    else:
+        initial_flux = source.flux_on_energy_function(tf.energy)
+        emu_at, tau_at = get_relative_flux(initial_flux, zenith_angles, telescope, tf)
+        rel_flux = 1 * emu_at
+
+    year_seconds = 3600 * 24 * 365
+    multiplier = ref_initial_flux * de * year_seconds
+
+    return rel_flux * multiplier
+
+
 def main():
     # sources from file "source_table.csv" -- potential high-energy neutrino sources
     sources = get_sources("data/source_table.csv")
 
-    # Baikal-GVD telescope 51◦46′N 104◦24'E
-    telescope1 = get_simple_telescope("BaikalGVD", latitude=[51, 46], filename="data/eff_area.root")
-    telescope2 = get_Baikal()
+    # Baikal-GVD telescope 51°46′N 104°24'E
+    # no dependence of effective area on the zenith angle
+    baikal_simple = get_simple_telescope("BaikalGVD-trigger", latitude=[51, 46],
+                                         filename="data/eff_area_single_cluster.root", histname="hnu_trigger",
+                                         brd_angle=[30])
+
+    # zenith-angle-dependent version
+    baikal_complex = get_Baikal("data/eff_area_trigger", name_addition="")
+
+    baikal = baikal_complex
+
+    # KM3Net telescope 36°17'N 15°58'E
+    # no dependence of effective area on the zenith angle (2023 data)
+    km3net = get_simple_telescope_from_txt("KM3Net-trigger", latitude=[36, 16],
+                                           filename="data/KM3Net-total.txt",
+                                           brd_angle=[-12])
 
     # Earth transmission function calculated with nuFate
     tf = TransmissionFunction()
 
-    angular_precision = 180
-
-    ref_energy = telescope1.energy
-    d_lg_e = telescope1.lg_energy[1] - telescope1.lg_energy[0]
-    de = 10 ** (telescope1.lg_energy + d_lg_e) - ref_energy
-
-    year_seconds = 3600 * 24 * 365
-
     source_numbers = [0]
 
-    initial, double_simple_r, simply_registered, registered = [], [], [], []
+    baikal_r, km3net_r = [], []
     for sn in source_numbers:
-        # source = Source(name="Test1", declination_angle=-np.pi/2, k0=0.1, gamma=3)
+        # source = Source(name="Test1", declination_angle=-np.pi/2, k0=1e-11, gamma=3, right_ascension_time=0.12)
         source = sources[sn]  # take one source from the list
-        print(source.info())
-        print(telescope2.source_available_time(source))
+        source.info()
 
-        zenith_angles = telescope2.get_orbit_parametrization(source, angular_precision)[1]
-        initial_flux = source.flux_on_energy_function(tf.energy)
+        baikal_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal)
+        km3net_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=km3net)
 
-        ref_initial_flux = source.flux_on_energy_function(ref_energy)
-        emu_at1, tau_at1 = get_relative_flux(initial_flux, zenith_angles, telescope2, tf)
-        rel_flux_r1 = get_simple_relative_flux(zenith_angles, telescope1)
-        rel_flux_r2 = get_simple_relative_flux(zenith_angles, telescope2)
+        baikal_r.append(baikal_rel)
+        km3net_r.append(km3net_rel)
 
-        initial.append(ref_initial_flux)
-        multiplier = ref_initial_flux * de * year_seconds
-        simply_registered.append(rel_flux_r2 * multiplier)
-        double_simple_r.append(rel_flux_r1 * multiplier)
-        registered.append((2/3 * emu_at1 + 1/3 * tau_at1) * multiplier)
-
-    draw_root_hist(sources, source_numbers, telescope1.energy,
-                   double_simple_r, simply_registered, registered)
+    draw_root_hist(sources=sources, source_numbers=source_numbers,
+                   energy_c=baikal.energy, reg=baikal_r,
+                   energy_s=km3net.energy, simple_reg=km3net_r,
+                   value_c=20 * 5, value_s=5)
     return
 
 
