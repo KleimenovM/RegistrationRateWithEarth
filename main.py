@@ -6,31 +6,26 @@ import numpy as np
 from root_hist_draw import draw_root_hist
 from single_theta_flux import calculate_single_theta_flux
 from source import get_sources, Source
-from telescope import Telescope, get_simple_telescope, get_complex_telescope, get_simple_telescope_from_txt
+from telescope import Telescope, get_simple_telescope, get_Baikal, get_simple_telescope_from_txt
 from transmission_function import TransmissionFunction
 
 
-def get_Baikal(folder: str, latitude: list = (51, 46), name_addition: str = "") -> Telescope:
-    filenames = []
-    angles = []
-    p = 0.0
-    filenames.append(f"{folder}/eff_area_{0.0}_{0.1}.root")
-    angles.append(0.0)
-    while p < 0.99:
-        p_0_wr = np.round(p, 1)
-        p_1_wr = np.round(p + .1, 1)
-        filenames.append(f"{folder}/eff_area_{p_0_wr}_{p_1_wr}.root")
-        angle_p = -np.mean((np.arcsin(p), np.arcsin(p + 0.1)))
-        angles.append(angle_p)
-        p += .1
-    filenames.append(filenames[-1])
-    angles.append(-np.pi / 2)
+def get_simple_relative_flux(theta: np.ndarray, telescope: Telescope) -> np.ndarray:
+    """
+    Returns a relative flux value without attenuation in the Earth
+    @param theta: np.ndarray - angular movement parametrization
+    @param telescope: Telescope
+    @return: np.ndarray - relative change in the flux due to the Earth revolution
+    """
+    lg_energy = telescope.lg_energy
 
-    return get_complex_telescope(name='BaikalGVD' + name_addition,
-                                 latitude=latitude,
-                                 filenames=filenames,
-                                 angles=angles,
-                                 histname="hnu_trigger")
+    grid_x, grid_y = np.meshgrid(theta, lg_energy, indexing='ij')
+    grid = np.array([grid_x, grid_y]).T
+
+    registration_rate = telescope.ef_area(grid).T
+    avg_reg_rate = np.mean(registration_rate, axis=0)
+
+    return avg_reg_rate
 
 
 def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
@@ -70,23 +65,17 @@ def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
     return total_flux_emu, total_flux_tau
 
 
-def get_simple_relative_flux(theta: np.ndarray, telescope: Telescope):
-    lg_energy = telescope.lg_energy
-
-    grid_x, grid_y = np.meshgrid(theta, lg_energy, indexing='ij')
-    grid = np.array([grid_x, grid_y]).T
-
-    registration_rate = telescope.ef_area(grid).T
-    avg_reg_rate = np.mean(registration_rate, axis=0)
-
-    return avg_reg_rate
-
-
-def one_telescope_full_cycle(source: Source,
-                             tf: TransmissionFunction,
-                             telescope: Telescope,
-                             simple: bool = False,
-                             angular_precision: int = 180):
+def one_telescope_full_cycle(source: Source, tf: TransmissionFunction, telescope: Telescope,
+                             simple: bool = False, angular_precision: int = 180) -> np.ndarray:
+    """
+    Performs a full calculations cycle for one source and one telescope
+    @param source: Source - the neutrino source
+    @param tf: TransmissionFunction - the Earth transmission function
+    @param telescope: Telescope - the telescope for which calculation is performed
+    @param simple: bool - if true no attenuation in the Earth is considered
+    @param angular_precision: int - number of angles to describe the Earth's rotation
+    @return: np.ndarray - registered spectrum (registration rate on energy)
+    """
     zenith_angles = telescope.get_orbit_parametrization(source, angular_precision)[1]
 
     print(f"{telescope.name}: {telescope.source_available_time(source)}")

@@ -143,7 +143,7 @@ def get_simple_telescope_from_txt(name: str, latitude: list, filename: str, brd_
 
 def get_complex_telescope(name: str, latitude: list[int],
                           filenames: list[str], angles: list[float],
-                          histname: str = "hnu_reco") -> Telescope:
+                          histname: str) -> Telescope:
     """
     Returns a telescope with given name, declination and source of effective area dependent on angle
     @param angles: list of angles corresponding with each file
@@ -182,6 +182,29 @@ def get_complex_telescope(name: str, latitude: list[int],
                      latitude=deg_to_rad(latitude),
                      ef_area_table=data,
                      angles=angles)
+
+
+def get_Baikal(folder: str, latitude: list = (51, 46), name_addition: str = "", histname="hnu_trigger") -> Telescope:
+    filenames = []
+    angles = []
+    p = 0.0
+    filenames.append(f"{folder}/eff_area_{0.0}_{0.1}.root")
+    angles.append(0.0)
+    while p < 0.99:
+        p_0_wr = np.round(p, 1)
+        p_1_wr = np.round(p + .1, 1)
+        filenames.append(f"{folder}/eff_area_{p_0_wr}_{p_1_wr}.root")
+        angle_p = -np.mean((np.arcsin(p), np.arcsin(p + 0.1)))
+        angles.append(angle_p)
+        p += .1
+    filenames.append(filenames[-1])
+    angles.append(-np.pi / 2)
+
+    return get_complex_telescope(name='BaikalGVD' + name_addition,
+                                 latitude=latitude,
+                                 filenames=filenames,
+                                 angles=angles,
+                                 histname=histname)
 
 
 if __name__ == '__main__':

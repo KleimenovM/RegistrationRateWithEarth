@@ -1,14 +1,12 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import ROOT as rt
 
-from main import get_Baikal
-from telescope import get_simple_telescope
+from telescope import get_simple_telescope, get_Baikal
 
 
 def draw_eff_area():
 
-    t = get_Baikal()
+    t = get_Baikal("data/eff_area_trigger")
 
     m, n = t.angles.size, t.lg_energy.size
 
