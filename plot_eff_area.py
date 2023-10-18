@@ -21,11 +21,11 @@ def draw_eff_area():
     canvas.SetBottomMargin(.1)
     canvas.SetRightMargin(.18)
 
-    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m-1, a)
+    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m-1, np.rad2deg(a))
 
     for i, a_i in enumerate(a):
         for j, e_j in enumerate(e):
-            hist.Fill(e_j, a_i, f_xv[i, j] + 5e-9)
+            hist.Fill(e_j, np.rad2deg(a_i), f_xv[i, j] + 3e-6)
 
     size = .04
 
@@ -34,7 +34,7 @@ def draw_eff_area():
     hist.GetXaxis().SetLabelSize(size)
     hist.GetXaxis().SetTitleOffset(1.2)
 
-    hist.GetYaxis().SetTitle("#theta, rad")
+    hist.GetYaxis().SetTitle("#theta, deg")
     hist.GetYaxis().SetTitleSize(size)
     hist.GetYaxis().SetLabelSize(size)
     hist.GetYaxis().SetTitleOffset(1.2)

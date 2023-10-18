@@ -16,12 +16,12 @@ def plot_transmission_graph(gamma=2):
 
     m, n = angles.size, e.size
 
-    hist = rt.TH2F("Title", "Transmission matrix for #Gamma = 2", n-1, e, m-1, angles)
+    hist = rt.TH2F("Title", "Transmission matrix for #Gamma = 2", n-1, e, m-1, np.rad2deg(angles))
 
     for i, a in enumerate(angles):
         f_i = smart_division(tf.convolution(a, flux, 2), flux)
         for j, e_j in enumerate(e):
-            hist.Fill(e_j, a, f_i[j])
+            hist.Fill(e_j, np.rad2deg(a), f_i[j])
 
     canvas = rt.TCanvas("c", "c", 800, 600)
     canvas.SetLeftMargin(.1)
@@ -35,7 +35,7 @@ def plot_transmission_graph(gamma=2):
     hist.GetXaxis().SetLabelSize(size)
     hist.GetXaxis().SetTitleOffset(1.2)
 
-    hist.GetYaxis().SetTitle("#theta, rad")
+    hist.GetYaxis().SetTitle("#theta, deg")
     hist.GetYaxis().SetTitleSize(size)
     hist.GetYaxis().SetLabelSize(size)
     hist.GetYaxis().SetTitleOffset(1.2)
