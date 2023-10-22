@@ -15,7 +15,7 @@ def check_sources():
 
     energy = 10 ** np.linspace(2, 6, 100)
 
-    plt.figure(figsize=(15, 5))
+    plt.figure(figsize=(17, 5))
 
     n = 3
     lw = 2
@@ -26,17 +26,17 @@ def check_sources():
             plt.plot(energy, energy ** 2 * s.flux_on_energy_function(energy) * 1e-7,
                      label=s.name, linewidth=lw, color=Colors[i], linestyle=Linestyles[i])
         elif i < 9:
-            plt.subplot(1, n, 2)
+            plt.subplot(1, n, 3)
             plt.plot(energy, energy ** 2 * s.flux_on_energy_function(energy) * 1e-7,
                      label=s.name, linewidth=lw, color=Colors[i], linestyle=Linestyles[i])
         else:
-            plt.subplot(1, n, 3)
+            plt.subplot(1, n, 2)
             plt.plot(energy, energy ** 2 * s.flux_on_energy_function(energy) * 1e-7,
                      label=s.name, linewidth=lw, color=Colors[i], linestyle=Linestyles[i])
 
     for i in range(n):
         plt.subplot(1, n, i+1)
-        plt.legend()
+        plt.legend(fontsize=12)
 
         plt.xscale("log")
         plt.yscale("log")
@@ -44,8 +44,11 @@ def check_sources():
         plt.ylim(1e-15, 1e-10)
         plt.xlim(1e2, 1e6)
 
-        plt.xlabel("E, GeV")
-        plt.ylabel(r"$E^2\Phi_\nu\ [TeV\ cm^{-2}\ s^{-1}]$")
+        plt.xlabel("E, GeV", fontsize=12)
+        if i < 1:
+            plt.ylabel(r"$E^2\Phi_\nu\ [TeV\ cm^{-2}\ s^{-1}]$", fontsize=12)
+
+        plt.tick_params(labelsize=12)
 
         plt.grid(color="gray", linestyle='dashed')
 
