@@ -120,6 +120,17 @@ def eff_area_step(total_relative_spectrum_function, zenith: float, telescope: Te
 def calculate_single_theta_flux(initial_flux: np.ndarray, zenith: float,
                                 telescope: Telescope, tf: TransmissionFunction,
                                 nuFate_method: int, mid_border: float = 1., low_border: float = -1.):
+    """
+    Full relative spectrum for a single zenith angle computation
+    @param initial_flux:
+    @param zenith:
+    @param telescope:
+    @param tf:
+    @param nuFate_method:
+    @param mid_border:
+    @param low_border:
+    @return:
+    """
     conv_f = convoluted_flux(initial_flux, zenith, tf, nuFate_method)
     interp_f = interpolated_flux(conv_f, tf, mid_border, low_border)
     final_spectrum = eff_area_step(interp_f, zenith, telescope)

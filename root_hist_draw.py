@@ -18,6 +18,7 @@ def add_text(fs: int = 22, align_left=False):
 def create_hist_from_array(x: np.ndarray, y: np.ndarray, title: str, x0=None) -> rt.TH1F:
     if x0 is None:
         x0 = x
+
     m = x0.size
 
     n = y.size
@@ -46,9 +47,13 @@ def create_hist_from_array(x: np.ndarray, y: np.ndarray, title: str, x0=None) ->
 def draw_root_hist(sources: list[Source], source_numbers: list[int],
                    energy_s: np.ndarray, energy_c: np.ndarray = None,
                    simple_reg: list[np.ndarray] = None, reg: list[np.ndarray] = None,
-                   value_c: float = 1, value_s: float = 1):
+                   value_c: float = 1, value_s: float = 1, caption_pos='left'):
+
+    energy_s = energy_s[1:]
     if energy_c is None:
         energy_c = energy_s
+    else:
+        energy_c = energy_c[1:]
 
     colors = [602, 633, 419, 0]
     fill = [3654, 3645, 3095, 3001]
@@ -65,8 +70,8 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
     for i, n in enumerate(source_numbers):
         source = sources[n]
 
-        hist_simple.append(create_hist_from_array(energy_s, simple_reg[i] * value_s, sources[n].name, x0=energy_c))
-        hist_complex.append(create_hist_from_array(energy_c, reg[i] * value_c, "1"))
+        hist_simple.append(create_hist_from_array(energy_s, simple_reg[i][1:] * value_s, sources[n].name, x0=energy_c))
+        hist_complex.append(create_hist_from_array(energy_c, reg[i][1:] * value_c, "1"))
 
         simple_integral = np.round(np.sum(hist_simple[i]), 2)
         complex_integral = np.round(np.sum(hist_complex[i]), 2)
@@ -87,7 +92,13 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
         hist_simple[i].SetFillStyle(fill[i + 1])
 
         text = add_text(align_left=True)
-        x_0, y_0, dy = .7, .7, .08
+
+        if caption_pos == 'left':
+            x_0 = .2
+        else:
+            x_0 = .7
+
+        y_0, dy = .7, .08
 
         if i == 0:
             if hist_simple[i].GetMaximum() > hist_complex[i].GetMaximum():

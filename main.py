@@ -29,10 +29,12 @@ def get_simple_relative_flux(theta: np.ndarray, telescope: Telescope) -> np.ndar
 
 
 def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
-                      telescope: Telescope, tf: TransmissionFunction):
+                      telescope: Telescope, tf: TransmissionFunction,
+                      nuFate_method=1):
     """
     Returns e(mu) and tau relative fluxes with the initial flux given
-    @param telescope:
+    @param nuFate_method: 0 for no secondaries, 1 - e, mu with secondaries, 2 - tau with secondaries
+    @param telescope: Telescope class object
     @param theta: trajectory parametrization with successive zenith angles
     @param initial_flux: flux on energy dependence before the Earth
     @param tf: Transmission Function class containing nuFate calculations
@@ -41,28 +43,20 @@ def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
     m = theta.size
     n = telescope.lg_energy.size
 
-    # total flux matrix
-    total_flux_matrix_emu = np.zeros([m, n])
-    total_flux_matrix_tau = np.zeros([m, n])
+    total_flux_matrix = np.zeros([m, n])
 
     mid_border, low_border = 1.0, -1.0
 
     for i, t_i in enumerate(theta):
-        total_flux_matrix_emu[i] \
+        total_flux_matrix[i] \
             = calculate_single_theta_flux(initial_flux, t_i,
-                                          telescope, tf, nuFate_method=1,
+                                          telescope, tf, nuFate_method=nuFate_method,
                                           mid_border=mid_border, low_border=low_border)
-        total_flux_matrix_tau[i] \
-            = calculate_single_theta_flux(initial_flux, t_i,
-                                          telescope, tf, nuFate_method=2,
-                                          mid_border=mid_border, low_border=low_border)
-
     plt.show()
 
-    total_flux_emu = total_flux_matrix_emu.mean(axis=0)
-    total_flux_tau = total_flux_matrix_tau.mean(axis=0)
+    total_flux = total_flux_matrix.mean(axis=0)
 
-    return total_flux_emu, total_flux_tau
+    return total_flux
 
 
 def one_telescope_full_cycle(source: Source, tf: TransmissionFunction, telescope: Telescope,
@@ -90,7 +84,7 @@ def one_telescope_full_cycle(source: Source, tf: TransmissionFunction, telescope
         rel_flux = get_simple_relative_flux(zenith_angles, telescope)
     else:
         initial_flux = source.flux_on_energy_function(tf.energy)
-        emu_at, tau_at = get_relative_flux(initial_flux, zenith_angles, telescope, tf)
+        emu_at = get_relative_flux(initial_flux, zenith_angles, telescope, tf, nuFate_method=1)
         rel_flux = 1 * emu_at
 
     year_seconds = 3600 * 24 * 365
@@ -123,7 +117,7 @@ def main():
     # Earth transmission function calculated with nuFate
     tf = TransmissionFunction()
 
-    source_numbers = [9]
+    source_numbers = [10]
     # source_numbers = [x for x in range(12)]
 
     value_s, value_c, value_km = 20*5, 20*5, 5
@@ -141,14 +135,12 @@ def main():
         km3net_r.append(km3net_rel)
         baikal_s_r.append(baikal_no_at_rel)
 
-        i_s = np.round(np.sum(baikal_no_at_rel * value_s), 2)
-        i_c = np.round(np.sum(baikal_rel * value_c), 2)
-        i_km = np.round(np.sum(km3net_rel * value_km), 2)
-
+        # i_s = np.round(np.sum(baikal_no_at_rel * value_s), 2)
+        # i_c = np.round(np.sum(baikal_rel * value_c), 2)
+        # i_km = np.round(np.sum(km3net_rel * value_km), 2)
+        #
         # print(f'{source.name} & {i_s} & {i_c} & {np.round(i_c / i_s, 2)}'+r' \\')
         # print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}'+r' \\')
-
-    print(baikal_r)
 
     draw_root_hist(sources=sources, source_numbers=source_numbers,
                    energy_c=baikal.energy, reg=baikal_r,
