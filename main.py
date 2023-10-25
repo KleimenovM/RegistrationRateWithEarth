@@ -78,7 +78,7 @@ def one_telescope_full_cycle(source: Source, tf: TransmissionFunction, telescope
     """
     zenith_angles = telescope.get_orbit_parametrization(source, angular_precision)[1]
 
-    print(f"{telescope.name}: {telescope.source_available_time(source)}")
+    # print(f"{telescope.name}: {telescope.source_available_time(source)}")
 
     ref_energy = telescope.energy
     d_lg_e = telescope.lg_energy[1] - telescope.lg_energy[0]
@@ -123,19 +123,32 @@ def main():
     # Earth transmission function calculated with nuFate
     tf = TransmissionFunction()
 
-    source_numbers = [0]
+    source_numbers = [9]
+    # source_numbers = [x for x in range(12)]
 
-    baikal_r, km3net_r = [], []
+    value_s, value_c, value_km = 20*5, 20*5, 5
+
+    baikal_r, km3net_r, baikal_s_r = [], [], []
     for sn in source_numbers:
         # source = Source(name="Test1", declination_angle=-np.pi/2, k0=1e-11, gamma=3, right_ascension_time=0.12)
         source = sources[sn]  # take one source from the list
-        source.info()
 
-        baikal_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal)
+        baikal_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal, simple=False)
+        baikal_no_at_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal, simple=True)
         km3net_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=km3net)
 
         baikal_r.append(baikal_rel)
         km3net_r.append(km3net_rel)
+        baikal_s_r.append(baikal_no_at_rel)
+
+        i_s = np.round(np.sum(baikal_no_at_rel * value_s), 2)
+        i_c = np.round(np.sum(baikal_rel * value_c), 2)
+        i_km = np.round(np.sum(km3net_rel * value_km), 2)
+
+        # print(f'{source.name} & {i_s} & {i_c} & {np.round(i_c / i_s, 2)}'+r' \\')
+        # print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}'+r' \\')
+
+    print(baikal_r)
 
     draw_root_hist(sources=sources, source_numbers=source_numbers,
                    energy_c=baikal.energy, reg=baikal_r,

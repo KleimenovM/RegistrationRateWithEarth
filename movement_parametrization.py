@@ -110,13 +110,14 @@ if __name__ == '__main__':
 
         ax.scatter(vec1[0], vec1[1], vec1[2], color=Colors[i])
 
-        ax2.plot(psi_sample / (2 * np.pi) * 24, np.rad2deg(theta1),
+        ax2.plot(psi_sample / (2 * np.pi) * 24, 90 - np.rad2deg(theta1),
                  color=Colors[i], linewidth=2, label=name, linestyle=Linestyles[i])
 
     ax2.grid(color='gray', linestyle='dashed')
     plt.legend(fontsize=12)
+    ax2.invert_yaxis()
     ax2.tick_params(labelsize=14)
-    plt.ylim(-90, 90)
+    plt.ylim(180, 0)
     plt.xlim(0, 24)
 
     ax.legend()

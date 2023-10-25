@@ -35,7 +35,7 @@ def create_hist_from_array(x: np.ndarray, y: np.ndarray, title: str, x0=None) ->
     hist.GetXaxis().SetTitleSize(size)
     hist.GetXaxis().SetLabelSize(size)
 
-    hist.GetYaxis().SetTitle("events per year per bin, 10^{-3}")
+    hist.GetYaxis().SetTitle("events per 5 years per bin")
     hist.GetYaxis().SetTitleOffset(1.2)
     hist.GetYaxis().SetTitleSize(size)
     hist.GetYaxis().SetLabelSize(size)
@@ -113,11 +113,11 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
 
     text = add_text(24, align_left=True)
     text.SetTextColor(colors[0])
-    text.DrawLatexNDC(.44, .955, 'Baikal-GVD MC, 20 clusters, 5 yr')
+    text.DrawLatexNDC(.5, .955, 'Baikal-GVD MC, 20 clusters, 5 yr')
     text.SetTextColor(colors[1])
-    text.DrawLatexNDC(.44, .905, 'KM3Net, Full Telescope, 2 blocks, 5 yr')
+    text.DrawLatexNDC(.5, .905, 'KM3Net, Full Telescope, 2 blocks, 5 yr')
     text = add_text(26)
-    text.DrawLatexNDC(.2, .95, title)
+    text.DrawLatexNDC(.25, .95, title)
 
     rt.gStyle.SetOptStat(0)
     canvas.SetLogx()

@@ -29,20 +29,19 @@ def draw_eff_area():
 
     size = .04
 
-    hist.GetXaxis().SetTitle("E, GeV")
-    hist.GetXaxis().SetTitleSize(size)
-    hist.GetXaxis().SetLabelSize(size)
-    hist.GetXaxis().SetTitleOffset(1.2)
+    axes = hist.GetXaxis(), hist.GetYaxis(), hist.GetZaxis()
+    labels = ["E, GeV", "#theta, deg", "A_{ef}, m^{2}"]
 
-    hist.GetYaxis().SetTitle("#theta, deg")
-    hist.GetYaxis().SetTitleSize(size)
-    hist.GetYaxis().SetLabelSize(size)
-    hist.GetYaxis().SetTitleOffset(1.2)
+    for i, axis in enumerate(axes):
+        axis.SetTitle(labels[i])
+        axis.SetTitleSize(size)
+        axis.SetLabelSize(size)
+        axis.SetTitleOffset(1.2)
 
-    hist.GetZaxis().SetTitle("A_{ef}, m^{2}")
-    hist.GetZaxis().SetTitleSize(size)
-    hist.GetZaxis().SetLabelSize(size)
-    hist.GetZaxis().SetTitleOffset(1.2)
+    # Y-AXIS LABELLING SHIFT
+    y_axis = axes[1]
+    for i in range(10):
+        y_axis.ChangeLabel(i + 1, -1, -1, -1, 1, -1, f"{180 - i * 10}")
 
     rt.gStyle.SetOptStat(0)
     hist.Draw("colz")

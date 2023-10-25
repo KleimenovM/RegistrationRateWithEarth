@@ -10,6 +10,7 @@ def pyplot_figure(energy: np.ndarray,
                   area1: np.ndarray, area2: np.ndarray,
                   name1: str, name2: str):
     fig, ax1 = plt.subplots(figsize=(8, 6))
+
     ax1.plot(energy, area1, color='blue', label=name1)
     ax1.plot(energy, area2, color='red', label=name2)
 
@@ -39,33 +40,40 @@ def root_figure(energy: np.ndarray,
     title = "Baikal-GVD & KM3Net trigger effective area"
     hist1 = rt.TH1F(name1, title, n-1, energy)
     hist2 = rt.TH1F(name2, title, n-1, energy)
+    hist3 = rt.TH1F("ratio", title, n-1, energy)
+    hist4 = rt.TH1F("unit", title, n-1, energy)
 
     for i, e_i in enumerate(energy):
         hist1.Fill(e_i, area1[i])
         hist2.Fill(e_i, area2[i])
+        hist3.Fill(e_i, area1[i] / area2[i])
+        hist4.Fill(e_i, 1.0)
 
     colors = [602, 633, 419, 0]
     fill = [3654, 3645, 3095, 3001]
 
-    canvas = rt.TCanvas("c", "c", 800, 600)
-    canvas.SetLeftMargin(.12)
-    canvas.SetBottomMargin(.1)
-    canvas.SetRightMargin(.05)
-    canvas.SetTopMargin(.1)
+    canvas = rt.TCanvas("c", "c", 800, 800)
+    canvas.Draw()
+    # canvas.SetLeftMargin(.12)
+    # canvas.SetBottomMargin(.1)
+    # canvas.SetRightMargin(.05)
+    canvas.SetTopMargin(.05)
 
+    pad1 = rt.TPad("p1", "p1", 0, 0.4, 1, 1)
+    pad1.Draw()
     legend = rt.TLegend(0.15, 0.75, 0.6, 0.88)
 
     for i, hist in enumerate([hist1, hist2]):
-        size = .04
+        size = .045
 
         hist.GetXaxis().SetTitle("E, GeV")
-        hist.GetXaxis().SetTitleOffset(1.0)
+        # hist.GetXaxis().SetTitleOffset(1.0)
         hist.GetXaxis().SetTitleSize(size)
         hist.GetXaxis().SetLabelSize(size)
-        hist.GetXaxis().SetLimits(10**2, 10**6)
+        hist.GetXaxis().SetLabelOffset(0.03)
 
         hist.GetYaxis().SetTitle("effective area, m^{2}")
-        hist.GetYaxis().SetTitleOffset(1.2)
+        hist.GetYaxis().SetTitleOffset(1)
         hist.GetYaxis().SetTitleSize(size)
         hist.GetYaxis().SetLabelSize(size)
 
@@ -77,13 +85,54 @@ def root_figure(energy: np.ndarray,
         hist.SetFillStyle(fill[i])
 
     rt.gStyle.SetOptStat(0)
-    canvas.SetLogx()
-    canvas.SetLogy()
+    pad1.SetLogx()
+    pad1.SetLogy()
+    pad1.SetBottomMargin(0)
 
+    pad1.cd()
     hist1.Draw("hist")
     hist2.Draw("same hist")
     legend.Draw()
-    canvas.Update()
+
+    rt.gPad.SetTicky(2)
+    rt.gPad.SetTickx(2)
+
+    # PAD 2
+    canvas.cd()
+    pad2 = rt.TPad("p2", "p2", 0, 0, 1, 0.4)
+    pad2.Draw()
+    rt.gStyle.SetOptTitle(0)
+
+    pad2.SetLogx()
+    hist3.SetLineWidth(2)
+    hist3.SetLineColor(colors[2])
+
+    hist4.SetLineWidth(2)
+    hist4.SetLineStyle(9)
+    hist4.SetLineColor(rt.kBlack)
+
+    size = 0.07
+    hist3.GetXaxis().SetTitle("E, GeV")
+    hist3.GetXaxis().SetTitleOffset(0.5)
+    hist3.GetXaxis().SetTitleSize(size)
+    hist3.GetXaxis().SetLabelSize(size)
+
+    hist3.GetYaxis().SetTitle("A_{Baikal} / A_{KM3NeT}")
+    hist3.GetYaxis().SetTitleOffset(0.6)
+    hist3.GetYaxis().SetTitleSize(size)
+    hist3.GetYaxis().SetLabelSize(size)
+
+    pad2.cd()
+
+    line = rt.TLine(100, 1, 800, 1)
+    line.Draw()
+    rt.gPad.SetTicky(2)
+    # rt.gPad.SetTickx(2)
+
+    pad2.SetTopMargin(.0)
+    pad2.SetBottomMargin(1.2)
+    hist3.Draw("hist")
+    hist4.Draw("same hist")
 
     input("Type anything to exit: ")
 
@@ -124,9 +173,9 @@ def compare_eff_areas():
     name1, name2 = "Baikal-GVD (20 clusters, trigger)", "KM3Net (2 blocks, trigger)"
 
     # Matplotlib realization
-    pyplot_figure(energy=energy,
-                  area1=baikal_ef_area, name1=name1,
-                  area2=km3net_ef_area, name2=name2)
+    # pyplot_figure(energy=energy,
+    #               area1=baikal_ef_area, name1=name1,
+    #               area2=km3net_ef_area, name2=name2)
 
     # ROOT realization
     root_figure(energy=energy,
