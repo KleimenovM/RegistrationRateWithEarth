@@ -100,11 +100,12 @@ def main():
     # Baikal-GVD telescope 51°46′N 104°24'E
     # no dependence of effective area on the zenith angle
     baikal_simple = get_simple_telescope("BaikalGVD-trigger", latitude=[51, 46],
-                                         filename="data/eff_area_single_cluster.root", histname="hnu_trigger",
+                                         filename="data/eff_area_single_cluster.root", histname="hnu_reco",
                                          brd_angle=[30])
 
     # zenith-angle-dependent version
-    baikal_complex = get_Baikal("data/eff_area_trigger", name_addition="")
+    baikal_simple = get_Baikal("data/eff_area_trigger", name_addition="", histname="hnu_trigger")
+    baikal_complex = get_Baikal("data/eff_area_trigger", name_addition="", histname="hnu_reco")
 
     baikal = baikal_complex
 
@@ -117,7 +118,7 @@ def main():
     # Earth transmission function calculated with nuFate
     tf = TransmissionFunction()
 
-    source_numbers = [10]
+    source_numbers = [5]
     # source_numbers = [x for x in range(12)]
 
     value_s, value_c, value_km = 20*5, 20*5, 5
@@ -128,24 +129,24 @@ def main():
         source = sources[sn]  # take one source from the list
 
         baikal_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal, simple=False)
-        baikal_no_at_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal, simple=True)
+        baikal_no_at_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal_simple, simple=False)
         km3net_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=km3net)
 
         baikal_r.append(baikal_rel)
         km3net_r.append(km3net_rel)
         baikal_s_r.append(baikal_no_at_rel)
 
-        # i_s = np.round(np.sum(baikal_no_at_rel * value_s), 2)
-        # i_c = np.round(np.sum(baikal_rel * value_c), 2)
-        # i_km = np.round(np.sum(km3net_rel * value_km), 2)
-        #
+        i_s = np.round(np.sum(baikal_no_at_rel * value_s), 2)
+        i_c = np.round(np.sum(baikal_rel * value_c), 2)
+        i_km = np.round(np.sum(km3net_rel * value_km), 2)
+
         # print(f'{source.name} & {i_s} & {i_c} & {np.round(i_c / i_s, 2)}'+r' \\')
-        # print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}'+r' \\')
+        print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}'+r' \\')
 
     draw_root_hist(sources=sources, source_numbers=source_numbers,
                    energy_c=baikal.energy, reg=baikal_r,
-                   energy_s=km3net.energy, simple_reg=km3net_r,
-                   value_c=20 * 5, value_s=5)
+                   energy_s=baikal.energy, simple_reg=baikal_s_r,
+                   value_c=20 * 5, value_s=20 * 5, caption_pos='left')
     return
 
 
