@@ -8,7 +8,7 @@ from tools import deg_to_rad
 
 class Source:
     """
-    This class describes a typical stellar neutrino source
+    This class describes a typical point-like stellar neutrino source
     """
 
     def __init__(self, name: str, declination_angle: float, right_ascension_time: float,

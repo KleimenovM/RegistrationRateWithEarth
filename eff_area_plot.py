@@ -6,7 +6,7 @@ from telescope import get_simple_telescope, get_Baikal
 
 def draw_eff_area():
 
-    t = get_Baikal("data/eff_area_trigger")
+    t = get_Baikal("data/eff_area_trigger", histname="hnu_reco")
 
     m, n = t.angles.size, t.lg_energy.size
 
@@ -21,11 +21,11 @@ def draw_eff_area():
     canvas.SetBottomMargin(.1)
     canvas.SetRightMargin(.18)
 
-    hist = rt.TH2F("Title", "Effective area on angle and energy", n-1, e, m-1, np.rad2deg(a))
+    hist = rt.TH2F("Title", "Reconstruction single cluster effective area, MC", n-1, e, m-1, np.rad2deg(a))
 
     for i, a_i in enumerate(a):
         for j, e_j in enumerate(e):
-            hist.Fill(e_j, np.rad2deg(a_i), f_xv[i, j] + 3e-6)
+            hist.Fill(e_j, np.rad2deg(a_i), f_xv[i, j] + 1e-8)
 
     size = .04
 
@@ -43,7 +43,11 @@ def draw_eff_area():
     for i in range(10):
         y_axis.ChangeLabel(i + 1, -1, -1, -1, 1, -1, f"{180 - i * 10}")
 
+    z_axis = axes[2]
+    z_axis.SetRangeUser(1e-8, 1e2)
+
     rt.gStyle.SetOptStat(0)
+    canvas.SetGrayscale()
     hist.Draw("colz")
     canvas.SetLogx()
     canvas.SetLogz()

@@ -96,7 +96,7 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
         if caption_pos == 'left':
             x_0 = .2
         else:
-            x_0 = .7
+            x_0 = .75
 
         y_0, dy = .7, .08
 
@@ -109,7 +109,7 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
                 hist_simple[i].Draw("same hist")
             text.DrawLatexNDC(x_0, y_0 + 0.07, '#delta = ' + str(np.round(source.declination, 2)) + "#circ")
         else:
-            hist_simple[i].Draw("same hist")
+            # hist_simple[i].Draw("same hist")
             hist_complex[i].Draw("same hist")
 
         rt.gStyle.SetTitleAlign(11)
@@ -124,14 +124,17 @@ def draw_root_hist(sources: list[Source], source_numbers: list[int],
 
     text = add_text(24, align_left=True)
     text.SetTextColor(colors[0])
-    text.DrawLatexNDC(.5, .955, 'Baikal-GVD MC, 20 clusters, 5 yr')
+    # text.DrawLatexNDC(.5, .955, 'Baikal-GVD MC, 20 clusters, 5 yr')
+    text.DrawLatexNDC(.35, .955, 'Baikal-GVD MC, 20 clusters, 5 yr, reconstruction')
     text.SetTextColor(colors[1])
-    text.DrawLatexNDC(.5, .905, 'KM3Net, Full Telescope, 2 blocks, 5 yr')
+    text.DrawLatexNDC(.35, .905, 'Baikal-GVD MC, 20 clusters, 5 yr, trigger')
+    # text.DrawLatexNDC(.5, .905, 'KM3Net, Full Telescope, 2 blocks, 5 yr')
     text = add_text(26)
-    text.DrawLatexNDC(.25, .95, title)
+    text.DrawLatexNDC(.2, .95, title)
 
     rt.gStyle.SetOptStat(0)
     canvas.SetLogx()
+    # canvas.SetGrayscale()
     canvas.Update()
 
     input("Insert any symbol to quit: ")

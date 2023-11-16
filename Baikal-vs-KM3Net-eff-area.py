@@ -49,8 +49,8 @@ def root_figure(energy: np.ndarray,
         hist3.Fill(e_i, area1[i] / area2[i])
         hist4.Fill(e_i, 1.0)
 
-    colors = [602, 633, 419, 0]
-    fill = [3654, 3645, 3095, 3001]
+    colors = [rt.kBlue, rt.kRed, 419, 0]
+    fill = [3654, 3945, 3095, 3001]
 
     canvas = rt.TCanvas("c", "c", 800, 800)
     canvas.Draw()
@@ -133,6 +133,9 @@ def root_figure(energy: np.ndarray,
     pad2.SetBottomMargin(1.2)
     hist3.Draw("hist")
     hist4.Draw("same hist")
+
+    # canvas.SetGrayscale()
+    canvas.Update()
 
     input("Type anything to exit: ")
 
