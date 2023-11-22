@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from root_hist_draw import draw_root_hist
+from root_hist_draw import draw_hist_ext
 from single_theta_flux import calculate_single_theta_flux
 from source import get_sources, Source
 from telescope import Telescope, get_simple_telescope, get_Baikal, get_simple_telescope_from_txt
@@ -70,7 +70,9 @@ def one_telescope_full_cycle(source: Source, tf: TransmissionFunction, telescope
     @param angular_precision: int - number of angles to describe the Earth's rotation
     @return: np.ndarray - registered spectrum (registration rate on energy)
     """
-    zenith_angles = telescope.get_orbit_parametrization(source, angular_precision)[1]
+    zenith_angles = telescope.get_orbit_parametrization(s_delta=source.delta,
+                                                        s_alpha=source.ra,
+                                                        angular_precision=angular_precision)[1]
 
     # print(f"{telescope.name}: {telescope.source_available_time(source)}")
 
@@ -143,10 +145,10 @@ def main():
         # print(f'{source.name} & {i_s} & {i_c} & {np.round(i_c / i_s, 2)}'+r' \\')
         print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}'+r' \\')
 
-    draw_root_hist(sources=sources, source_numbers=source_numbers,
-                   energy_c=baikal.energy, reg=baikal_r,
-                   energy_s=baikal.energy, simple_reg=baikal_s_r,
-                   value_c=20 * 5, value_s=20 * 5, caption_pos='left')
+    draw_hist_ext(sources=sources, source_numbers=source_numbers,
+                  energy_c=baikal.energy, reg=baikal_r,
+                  energy_s=baikal.energy, simple_reg=baikal_s_r,
+                  value_c=20 * 5, value_s=20 * 5, caption_pos='left')
     return
 
 

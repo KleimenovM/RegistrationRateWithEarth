@@ -3,7 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from tools import deg_to_rad
+from tools import deg_to_rad, hours_to_rad
 
 
 class Source:
@@ -18,6 +18,7 @@ class Source:
         self.delta = declination_angle  # rad
         self.declination = np.round(np.rad2deg(self.delta), 2)
         self.right_ascension = right_ascension_time
+        self.ra = hours_to_rad(self.right_ascension)
 
         # spectrum parameters
         self.k0 = k0  # 1e-11 TeV-1 s-1 cm-2

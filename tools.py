@@ -5,10 +5,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 Ag = np.array([[-0.0548755601367195, -0.8734370902532698, -0.4838350155472244],
-                [+0.4941094280132430, -0.4448296298016944, +0.7469822445004389],
-                [-0.8676661489582886, -0.1980763737056720, +0.4559837761713720]])
-
-Ag_inv = np.linalg.inv(Ag)
+               [+0.4941094280132430, -0.4448296298016944, +0.7469822445004389],
+               [-0.8676661489582886, -0.1980763737056720, +0.4559837761713720]])
 
 
 def deg_to_rad(deg: list):
@@ -16,6 +14,21 @@ def deg_to_rad(deg: list):
     for i in range(len(deg)):
         result += deg[i] / (60 ** i) / 180 * np.pi
     return result
+
+
+def hours_to_rad(h):
+    return h / 12 * np.pi
+
+
+def rad_to_hours(r):
+    return r / np.pi * 12
+
+
+def get_a_const_func(value):
+    def c_func(*args):
+        return value
+
+    return c_func()
 
 
 def rot_matrix(rotation_angle: float):
@@ -32,11 +45,27 @@ def sph_coord(r, theta, phi):
     return x, y, z
 
 
-def galactic2equatorial(ll, b, get_delta=False):
+def galactic2equatorial(ll, b, get_delta=False, get_alpha=False):
     r_gal = sph_coord(1, theta=b, phi=ll)
-    r_eq = Ag_inv.dot(r_gal)
+    r_eq = Ag.T.dot(r_gal)
+
+    # get all angles
+    if get_delta and get_alpha:
+        delta = np.arcsin(r_eq[2])
+        c_delta = np.cos(delta)
+        c_alpha = r_eq[0] / c_delta
+        s_alpha = r_eq[1] / c_delta
+        if s_alpha >= 0:
+            alpha = np.arccos(c_alpha)
+        else:
+            alpha = 2 * np.pi - np.arccos(c_alpha)
+        return delta, alpha  # delta (rad), ra (rad)
+
+    # get zenith angle only
     if get_delta:
-        return np.arcsin(r_eq[2])  # delta, rad
+        return np.arcsin(r_eq[2])  # delta (rad)
+
+    # 3D-coordinates
     return r_eq
 
 

@@ -14,6 +14,7 @@ class Telescope:
     """
     This class describes a typical neutrino telescope
     """
+
     def __init__(self, name: str, latitude: float, ef_area_table: np.ndarray, brd_angle=None, angles=None):
         self.name = name
         self.phi = latitude
@@ -23,7 +24,7 @@ class Telescope:
         self.ef_area = None
         self.angles = angles
         if brd_angle is None:
-            self.brd_angle = np.pi/6
+            self.brd_angle = np.pi / 6
         else:
             self.brd_angle = brd_angle
 
@@ -32,27 +33,36 @@ class Telescope:
         else:
             self.simple_effective_area()
 
-    def get_orbit_parametrization(self, source: Source, angular_precision: int):
-        psi = np.linspace(0, 2 * np.pi, angular_precision)
+    def get_orbit_parametrization(self, s_delta: float, s_alpha: float, angular_precision: int):
+        psi = s_alpha + np.linspace(0, 2 * np.pi, angular_precision)  # parametrization
         vec = np.zeros([3, psi.size])
-        vec[0], vec[1], vec[2] = sph_coord(r=1, theta=source.delta, phi=psi)
+        vec[0], vec[1], vec[2] = sph_coord(r=1, theta=s_delta, phi=psi)
         rm = rot_matrix(self.phi)
-        vec = np.dot(rm, vec)
+        vec = rm.dot(vec)
         theta = np.arcsin(vec[2])
-        return vec, theta
+        return vec, theta, psi
+
+    def equatorial2telescope(self, delta, alpha):
+        v_gal = sph_coord(r=1, theta=delta, phi=alpha)  # galactic_coordinates
+        rm = rot_matrix(self.phi)
+        vec = rm.dot(v_gal)
+        theta = np.arcsin(vec[2])
+        return theta
 
     def source_available_time(self, source):
         m = 1000
-        vec, theta = self.get_orbit_parametrization(source, m)
+        vec, theta, psi = self.get_orbit_parametrization(s_delta=source.delta,
+                                                         s_alpha=source.ra,
+                                                         angular_precision=m)
         theta_good = theta < -self.brd_angle
         return np.sum(theta_good) / m
 
     def simple_effective_area(self, angle_precision: int = 180):
         self.lg_energy = self.ef_area_table[0]  # + self.ef_area_table[1] / 2  # middle of the bin
-        self.energy = 10**self.lg_energy
+        self.energy = 10 ** self.lg_energy
         value = self.ef_area_table[2]  # ef_area value
 
-        zenith_parametrization = np.linspace(-np.pi/2, np.pi/2, angle_precision)
+        zenith_parametrization = np.linspace(-np.pi / 2, np.pi / 2, angle_precision)
         ef_area_parametrization = np.zeros([angle_precision, value.size])
 
         # simple method: if zenith angle < border angle, ef. area = 0
@@ -69,13 +79,13 @@ class Telescope:
 
     def complex_effective_area(self):
         self.lg_energy = self.ef_area_table[0]
-        self.energy = 10**self.lg_energy
+        self.energy = 10 ** self.lg_energy
         self.angles = np.array(self.angles)
 
         angle_energy_data = self.ef_area_table[2:]
 
         n, m = self.energy.size, self.angles.size
-        positive_angles = np.arange(np.pi/2, 0, -np.pi / (2 * m))
+        positive_angles = np.arange(np.pi / 2, 0, -np.pi / (2 * m))
         positive_values = np.zeros([m, self.energy.size])
 
         mod_angles = np.hstack([positive_angles, self.angles])
@@ -137,7 +147,7 @@ def get_simple_telescope_from_txt(name: str, latitude: list, filename: str, brd_
 
     return Telescope(name=name,
                      latitude=deg_to_rad(latitude),
-                     ef_area_table=np.array([lg_e_ref, lg_e_ref, 10**lg_a_ref]),
+                     ef_area_table=np.array([lg_e_ref, lg_e_ref, 10 ** lg_a_ref]),
                      brd_angle=deg_to_rad(brd_angle))
 
 
