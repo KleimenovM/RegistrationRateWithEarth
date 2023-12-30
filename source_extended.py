@@ -85,13 +85,10 @@ class ExtendedSource:
 
 
 def galactic_center(num=100):
-    # Data from this article
-    # https://arxiv.org/pdf/2307.01038.pdf
     ll, b = .0, .0  # rad
     l_loc, b_loc = np.deg2rad(60), np.deg2rad(4)  # [-30, 30] & [-2, 2]
-    k0_ref = 1.66 * 1e-18  # GeV-1 cm-2 s-1 sr-1
-    gamma_val = 2.53
-    k0_val = k0_ref * 1e4 * (100**gamma_val)
+    gamma_val = 2.5
+    k0_val = 1.2e-9  # GeV-1 s-1 m-2
     k0_f = get_a_const_func(k0_val)
     gamma_f = get_a_const_func(gamma_val)
 

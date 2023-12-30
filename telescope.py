@@ -142,7 +142,7 @@ def get_simple_telescope_from_txt(name: str, latitude: list, filename: str, brd_
 
     f_a = interp1d(lg_e, lg_area)
 
-    lg_e_ref = np.linspace(min(lg_e), 6, 10000)
+    lg_e_ref = np.linspace(min(lg_e), max(lg_e), 10000)
     lg_a_ref = f_a(lg_e_ref)
 
     return Telescope(name=name,

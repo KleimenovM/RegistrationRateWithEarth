@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from root_hist_draw import draw_hist_ext
+from root_hist_draw import draw_root_hist
 from single_theta_flux import calculate_single_theta_flux
 from source import get_sources, Source
 from telescope import Telescope, get_simple_telescope, get_Baikal, get_simple_telescope_from_txt
@@ -106,6 +106,7 @@ def main():
                                          brd_angle=[30])
 
     # zenith-angle-dependent version
+    baikal_simple = get_Baikal("data/eff_area_5", name_addition="", histname="hnu_trigger")
     baikal_simple = get_Baikal("data/eff_area_trigger", name_addition="", histname="hnu_trigger")
     baikal_complex = get_Baikal("data/eff_area_trigger", name_addition="", histname="hnu_reco")
 
@@ -123,11 +124,12 @@ def main():
     source_numbers = [5]
     # source_numbers = [x for x in range(12)]
 
-    value_s, value_c, value_km = 20*5, 20*5, 5
+    value_s, value_c, value_km = 20 * 5, 20 * 5, 5
 
     baikal_r, km3net_r, baikal_s_r = [], [], []
     for sn in source_numbers:
-        # source = Source(name="Test1", declination_angle=-np.pi/2, k0=1e-11, gamma=3, right_ascension_time=0.12)
+        # source = Source(name="Test1", declination_angle=np.deg2rad(-28.87), k0=1.2e-9, gamma=2.5,
+        #                 right_ascension_time=0.12)
         source = sources[sn]  # take one source from the list
 
         baikal_rel = one_telescope_full_cycle(source=source, tf=tf, telescope=baikal, simple=False)
@@ -142,13 +144,13 @@ def main():
         i_c = np.round(np.sum(baikal_rel * value_c), 2)
         i_km = np.round(np.sum(km3net_rel * value_km), 2)
 
-        # print(f'{source.name} & {i_s} & {i_c} & {np.round(i_c / i_s, 2)}'+r' \\')
-        print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}'+r' \\')
+        print(f'{source.name} & {i_s} & {i_c} & {np.round(i_c / i_s, 2)}'+r' \\')
+        # print(f'{source.name} & {i_s} & {i_km} & {np.round(i_s / i_km, 2)}' + r' \\')
 
-    draw_hist_ext(sources=sources, source_numbers=source_numbers,
-                  energy_c=baikal.energy, reg=baikal_r,
-                  energy_s=baikal.energy, simple_reg=baikal_s_r,
-                  value_c=20 * 5, value_s=20 * 5, caption_pos='left')
+    draw_root_hist(sources=sources, source_numbers=source_numbers,
+                   energy_c=baikal_complex.energy, reg=baikal_r,
+                   energy_s=baikal_simple.energy, simple_reg=baikal_s_r,
+                   value_c=value_c, value_s=value_s, caption_pos='left')
     return
 
 

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import ROOT as rt
 
-from telescope import Telescope, get_simple_telescope_from_txt, get_simple_telescope
+from telescope import Telescope, get_simple_telescope_from_txt, get_simple_telescope, get_Baikal
 from tools import deg_to_rad
 
 
@@ -49,7 +49,7 @@ def root_figure(energy: np.ndarray,
         hist3.Fill(e_i, area1[i] / area2[i])
         hist4.Fill(e_i, 1.0)
 
-    colors = [rt.kBlue, rt.kRed, 419, 0]
+    colors = [rt.kBlue, rt.kRed, rt.kGreen+2, 0]
     fill = [3654, 3945, 3095, 3001]
 
     canvas = rt.TCanvas("c", "c", 800, 800)
@@ -71,15 +71,16 @@ def root_figure(energy: np.ndarray,
         hist.GetXaxis().SetTitleSize(size)
         hist.GetXaxis().SetLabelSize(size)
         hist.GetXaxis().SetLabelOffset(0.03)
+        hist.GetXaxis().SetRangeUser(1e2, 1e7)
 
-        hist.GetYaxis().SetTitle("effective area, m^{2}")
+        hist.GetYaxis().SetTitle("muon effective area, m^{2} (w/o Earth abs.)")
         hist.GetYaxis().SetTitleOffset(1)
         hist.GetYaxis().SetTitleSize(size)
         hist.GetYaxis().SetLabelSize(size)
 
         legend.AddEntry(hist, hist.GetName())
 
-        hist.SetLineWidth(2)
+        hist.SetLineWidth(3)
         hist.SetLineColor(colors[i])
         hist.SetFillColor(colors[i])
         hist.SetFillStyle(fill[i])
@@ -104,7 +105,7 @@ def root_figure(energy: np.ndarray,
     rt.gStyle.SetOptTitle(0)
 
     pad2.SetLogx()
-    hist3.SetLineWidth(2)
+    hist3.SetLineWidth(3)
     hist3.SetLineColor(colors[2])
 
     hist4.SetLineWidth(2)
@@ -112,10 +113,12 @@ def root_figure(energy: np.ndarray,
     hist4.SetLineColor(rt.kBlack)
 
     size = 0.07
-    hist3.GetXaxis().SetTitle("E, GeV")
-    hist3.GetXaxis().SetTitleOffset(0.5)
-    hist3.GetXaxis().SetTitleSize(size)
-    hist3.GetXaxis().SetLabelSize(size)
+    x_axis3 = hist3.GetXaxis()
+    x_axis3.SetTitle("E, GeV")
+    x_axis3.SetTitleOffset(1.2)
+    x_axis3.SetTitleSize(size)
+    x_axis3.SetLabelSize(size)
+    x_axis3.SetRangeUser(1e2, 1e7)
 
     hist3.GetYaxis().SetTitle("A_{Baikal} / A_{KM3NeT}")
     hist3.GetYaxis().SetTitleOffset(0.6)
@@ -154,17 +157,32 @@ def compare_eff_areas():
                                              histname="hnu_trigger",
                                              brd_angle=[30])
 
-    baikal_clusters = 20  # 20 Baikal clusters
+    baikal = get_Baikal("data/eff_area_5", name_addition="", histname="hnu_trigger")
+
+    baikal_clusters = 4  # 4 times 5 Baikal clusters
 
     # KM3Net
     km3net: Telescope = get_simple_telescope_from_txt(name="KM3Net-trigger", latitude=[36, 16],
                                                       filename="data/KM3Net-total.txt",
                                                       brd_angle=[-12])
 
+    zenith = np.linspace(-np.pi/2, 0, 100)
+
+    ta = np.zeros(baikal.energy.size)
+    lg_energy = baikal.lg_energy
+    for z in zenith:
+        grid_x, grid_y = np.meshgrid(z, lg_energy, indexing='ij')
+        grid = np.array([grid_x, grid_y]).T
+
+        ea = baikal.ef_area(grid).T[0]
+
+        ta += ea
+    ta /= zenith.size
+
     b_lg_e, k_lg_e = baikal.lg_energy, km3net.lg_energy
-    lg_e_min, lg_e_max = max(min(b_lg_e), min(k_lg_e)), min(max(b_lg_e), max(k_lg_e), 5.9)
+    lg_e_min, lg_e_max = max(min(b_lg_e), min(k_lg_e)), min(max(b_lg_e), max(k_lg_e))
     lg_energy = np.arange(lg_e_min, lg_e_max, b_lg_e[1] - b_lg_e[0])
-    energy = 10**lg_energy
+    energy = 10 ** lg_energy
     theta = deg_to_rad([-90])
 
     grid_x, grid_y = np.meshgrid(theta, lg_energy, indexing='ij')
@@ -173,7 +191,7 @@ def compare_eff_areas():
     baikal_ef_area = baikal.ef_area(grid).T[0] * baikal_clusters
     km3net_ef_area = km3net.ef_area(grid).T[0]
 
-    name1, name2 = "Baikal-GVD (20 clusters, trigger)", "KM3Net (2 blocks, trigger)"
+    name1, name2 = r"Baikal-GVD (4 x 5 clusters, trigger)", "KM3Net (2 blocks, trigger)"
 
     # Matplotlib realization
     # pyplot_figure(energy=energy,

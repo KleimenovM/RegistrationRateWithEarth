@@ -47,7 +47,7 @@ def ext_source_cycle(source: ExtendedSource, tf: TransmissionFunction, telescope
 
 
 def main():
-    baikal_trig = get_Baikal("data/eff_area_trigger", name_addition="", histname="hnu_trigger")
+    baikal_trig = get_Baikal("data/eff_area_5", name_addition="", histname="hnu_trigger")
     baikal_reco = get_Baikal("data/eff_area_trigger", name_addition="", histname="hnu_reco")
 
     # Earth transmission function calculated with nuFate
@@ -67,7 +67,7 @@ def main():
     result2 = ext_source_cycle(source=source, tf=tf, telescope=baikal_trig)
 
     draw_root_ext(energy_s=baikal_trig.energy, energy_c=baikal_reco.energy,
-                  simple_reg=result2, reg=result1, value_c=20 * 5, value_s=20 * 5, caption_pos='right')
+                  simple_reg=result2, reg=result1, value_c=20 * 5, value_s=4 * 5, caption_pos='right')
 
     # plt.scatter(sampling, np.sum(result1, axis=1))
     # plt.scatter(sampling, np.sum(result2, axis=1))

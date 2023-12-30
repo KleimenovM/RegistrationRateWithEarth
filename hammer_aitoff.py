@@ -103,9 +103,9 @@ def draw_hammer_aitoff_ext():
     for i in range(m):
         d_i, ra_i = galactic2equatorial(points_ll[i], points_b[i], get_delta=True, get_alpha=True)
         x[i], y[i] = coordinates_conversion(12 - rad_to_hours(ra_i), np.rad2deg(d_i))
-        print(rad_to_hours(ra_i))
+        # print(rad_to_hours(ra_i))
 
-    plt.scatter(x, y, 1, color='black', label='Galactic plane')
+    plt.scatter(x, y, 0.3, color='black', alpha=.8, label='Galactic plane')
 
     # Galactic center
     source: ExtendedSource = galactic_center(num=1000)
@@ -117,7 +117,28 @@ def draw_hammer_aitoff_ext():
     for i in range(n):
         x_s_i, y_s_i = coordinates_conversion(12 - ra_c[i], d_c[i])
         x_s.append(x_s_i), y_s.append(y_s_i)
-    plt.scatter(x_s, y_s, 3, color='red', alpha=0.3, label='Galactic center')
+    plt.scatter(x_s, y_s, 3, color='orange', alpha=0.2, label='Galactic center')
+
+    # depict the sources
+    # sources = get_sources("data/source_table.csv")
+    #
+    # for i, s in enumerate(sources):
+    #     if i > 0 and s.name[:-3] == sources[i - 1].name[:-3]:
+    #         continue
+    #     if i < len(sources) - 1 and s.name[:-3] == sources[i + 1].name[:-3]:
+    #         name = s.name[:-3]
+    #     else:
+    #         name = s.name
+    #     x, y = coordinates_conversion(12 - s.right_ascension, s.declination)
+    #     # print(x, y)
+    #     plt.scatter(x, y, label=name)
+    #     print(s.name)
+    #     if s.name == "Vela Jr" or s.name == "NGC 1068":
+    #         plt.text(x - 0.15, y - 0.15, name, fontsize=12)
+    #     elif s.name == "MGRO J1908+06 (1)" or s.name == "Vela X":
+    #         plt.text(x + 0.1, y - 0.03, name, fontsize=12)
+    #     else:
+    #         plt.text(x - 0., y + 0.05, name, fontsize=12)
 
     plt.axis('off')
     plt.tight_layout()
