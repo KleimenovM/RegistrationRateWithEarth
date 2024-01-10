@@ -5,6 +5,7 @@
 # Attention! It takes several minutes to execute this file!
 
 import numpy as np
+import ROOT as rt
 
 from nuFATE.cascade import get_eigs as get_eigs1
 from nuFATE.cascade_secs import get_eigs as get_eigs2
@@ -67,7 +68,36 @@ def get_att_value_secs(w, v, ci, energy_nodes, zenith, E, phi_in, if_tau=False, 
     return extrapolating_spline(E, energy_nodes, phi_sol1, if_delta=absolute)
 
 
-def main():
+def save_npy(filename: str, data: list[np.ndarray]):
+    """
+    Saves the attenuation matrix in a numpy file
+    @param filename: "folder/filename.npy"
+    @param data: list of 3D numpy arrays
+    @return:
+    """
+    np.save("data/data_mod.npy", data)
+    return
+
+
+def save_root(filename, data, names):
+    """
+    Saves the attenuation matrix in a root file as a TH3F
+    @param names: titles for histograms
+    @param filename: "folder/filename.root"
+    @param data: 3D numpy matrix
+    @return:
+    """
+
+    file = rt.TFile.Open(filename, "RECREATE")
+    for k in range(len(data)):
+        file.WriteObject(data[k], names[k])
+
+    file.Close()
+
+    return
+
+
+def calculate_transmission(if_npy: bool, if_root: bool):
     # Choose the flavor & index you want
     flavor = 2  # 1,2,3 = e, mu, tau; negative sign for antiparticles
     if_delta_marker = True
@@ -82,14 +112,27 @@ def main():
     energy = 10**np.linspace(3, 10, n)
 
     root_hists, att_matrices = [], []  # attenuation matrices
+
+    hist_names = ["No_regeneration", "With_regeneration", "tau_with_regeneration"]
+
     for k in range(3):
+        # npy matrices
         att_matrices.append(np.zeros([m, n, n]))
 
-    for i in range(n):  # ENERGY
+        # root histograms
+        hist_k = rt.TH3F(hist_names[k], hist_names[k],
+                         m-1, z_angles,
+                         n-1, lg_e,
+                         n-1, lg_e)
+
+        root_hists.append(hist_k)
+
+    for i in range(n):  # split by energy
         lg_e_i = lg_e[i]
         e_i = 10**lg_e_i
         # create a delta_function
         gamma = set_delta_function(e_i)
+
         # calculate eigenvalues
         # for simple cascades
         w1, v1, ci1, energy_nodes1, phi_01 = get_eigs1(flavor, gamma,
@@ -99,7 +142,7 @@ def main():
         w2, v2, ci2, energy_nodes2, phi_02 = get_eigs2(flavor, gamma,
                                                        "nuFATE/NuFATECrossSections.h5",
                                                        pure_spectrum=True)
-        for j in range(m):  # ANGLE
+        for j in range(m):  # split by angle
             if j % 30 == 0:
                 print(f"{i}-{j}")
             z_j = z_angles[j]
@@ -122,12 +165,24 @@ def main():
             att_matrices[1][j, i] = att_with_regeneration
             att_matrices[2][j, i] = att_with_regeneration_tau
 
-    # save the file as an .npy
-    np.save("data/data_mod", att_matrices)
+            # FILL ROOT HISTOGRAMS
+            for k in range(n):  # split by energy
+                root_hists[0].Fill(z_j, lg_e[i], lg_e[k], att_no_regeneration[k])
+                root_hists[1].Fill(z_j, lg_e[i], lg_e[k], att_with_regeneration[k])
+                root_hists[2].Fill(z_j, lg_e[i], lg_e[k], att_with_regeneration_tau[k])
+
+    if if_npy:
+        # save as a .npy file
+        save_npy("data/data_mod.npy", att_matrices)
+
+    if if_root:
+        # save as a .root file
+        save_root("data/data_mod.root", root_hists, hist_names)
+
     return
 
 
 if __name__ == '__main__':
     # Pay attention! It takes several minutes to execute the file!
     # Do not run it pointlessly
-    main()
+    calculate_transmission(if_root=True, if_npy=False)

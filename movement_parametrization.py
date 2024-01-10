@@ -102,7 +102,9 @@ if __name__ == '__main__':
         s_i = sources[n]
         s_i.info()
 
-        vec1, theta1 = t.get_orbit_parametrization(source=s_i, angular_precision=90)
+        vec1, theta1 = t.get_orbit_parametrization(s_delta=s_i.delta,
+                                                   s_alpha=s_i.ra,
+                                                   angular_precision=90)[:2]
 
         name = s_i.name
         if remove_label[i] == 1:
@@ -113,7 +115,7 @@ if __name__ == '__main__':
         ax2.plot(psi_sample / (2 * np.pi) * 24, 90 - np.rad2deg(theta1),
                  color=Colors[i], linewidth=2, label=name, linestyle=Linestyles[i])
 
-    ax2.galactic_grid(color='gray', linestyle='dashed')
+    ax2.grid(color='gray', linestyle='dashed')
     plt.legend(fontsize=12)
     ax2.invert_yaxis()
     ax2.tick_params(labelsize=14)

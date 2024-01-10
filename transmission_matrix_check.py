@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import ROOT as rt
 
 from transmission_function import TransmissionFunction
 
