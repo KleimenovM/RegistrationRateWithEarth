@@ -27,6 +27,12 @@ class TransmissionFunction:
         self.energy = 10 ** self.lg_energy
 
     def angle_interpolated_matrix(self, angle: float, nuFate_method: int):
+        """
+        Performs a linear interpolation along the -angle- axis
+        @param angle: (float) an input value
+        @param nuFate_method: (int) 0 -> cascades only, 1 -> secondaries included, 2-> tau neutrino
+        @return: (np.ndarray) - a 2D transmission matrix for a point (energy_in, energy_out)
+        """
         if angle >= 0:
             return np.eye(self.n)  # no attenuation
 
