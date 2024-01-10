@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import ROOT as rt
 
@@ -35,7 +36,7 @@ def calculate_transmission_coefficients():
     energy = tf.energy  # energy distribution (from 10^3 GeV to 10^10 GeV, 200 points)
 
     m = 180
-    angles = np.linspace(-np.pi/2, 0, m)  # angular distribution
+    angles = np.linspace(np.pi/2, np.pi, m)  # angular distribution
 
     L = 20
     gammas = np.linspace(2.0, 4.0, L)  # gammas
@@ -45,7 +46,10 @@ def calculate_transmission_coefficients():
     for (i, gamma) in enumerate(gammas):
         gamma_flux = energy ** (-gamma)
         for (j, angle) in enumerate(angles):
-            transmission_cof[i, j] = convoluted_flux(gamma_flux, angle, tf, nuFate_method=1)
+            transmission_cof[i, j] = convoluted_flux(gamma_flux, np.pi/2 - angle, tf, nuFate_method=1)
+
+    plt.imshow(transmission_cof[0])
+    plt.show()
 
     save_as_a_root_hist(filename="data/transmission_coefficient.root",
                         histname="tr_cof",
