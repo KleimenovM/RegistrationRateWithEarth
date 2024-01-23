@@ -125,6 +125,10 @@ def calculate_transmission(if_npy: bool, if_root: bool):
                          n-1, lg_e,
                          n-1, lg_e)
 
+        hist_k.GetXaxis().SetTitle("zenith angle, rad")
+        hist_k.GetYaxis().SetTitle("lg(E_in / GeV)")
+        hist_k.GetZaxis().SetTitle("lg(E_out / GeV)")
+
         root_hists.append(hist_k)
 
     for i in range(n):  # split by energy
