@@ -6,7 +6,7 @@ from single_theta_flux import convoluted_flux
 
 
 def save_as_a_2d_root_hist(filename: str, histname: str, x: np.ndarray, y: np.ndarray, data: np.ndarray,
-                           x_title: str = "zenith angle, rad", y_title: str = "lg(E/1 GeV)"):
+                           x_title: str = "lg(E/1 GeV)", y_title: str = "zenith angle, deg"):
     hist = rt.TH2F(histname, histname,
                    x.size - 1, x,
                    y.size - 1, y)
@@ -39,7 +39,7 @@ def calculate_transmission_coefficients():
     m = 180
     angles = np.linspace(np.pi/2, np.pi, m)  # angular distribution
 
-    L = 10
+    L = 11
     gammas = np.linspace(2.0, 4.0, L)  # gammas
 
     transmission_cof = np.zeros([L, m, n])
@@ -55,8 +55,8 @@ def calculate_transmission_coefficients():
 
         save_as_a_2d_root_hist(filename=f"data/transmission/tc_gamma{np.round(gamma, 1)}.root",
                                histname=f"tc",
-                               x=angles, y=tf.lg_energy,
-                               data=transmission_cof[i])
+                               x=tf.lg_energy, y=np.rad2deg(angles),
+                               data=transmission_cof[i].T)
 
     return
 

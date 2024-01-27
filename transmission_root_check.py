@@ -7,7 +7,7 @@ def check_root_transmission_table():
 
     print("0 -> no regeneration, 1 -> with regeneration, 2 -> tau with regeneration")
     s = int(input("Enter a number 0, 1 or 2: "))
-
+    
     file = rt.TFile.Open("data/data_mod.root", "READ")
 
     names = ["No_regeneration", "With_regeneration", "tau_with_regeneration"]
