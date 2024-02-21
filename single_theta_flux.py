@@ -9,33 +9,37 @@ from transmission_function import TransmissionFunction
 
 def attenuation_extrapolation(lg_energy: np.ndarray, spectra_ratio: np.ndarray, t00: float):
     """
-    Extrapolates attenuated spectrum to the region where nuFate cannot perform calculations
-    @param lg_energy: lg of neutrino energy
-    @param spectra_ratio: relative attenuated spectrum
-    @param t00: low-energy zero attenuation border
-    @return: extrapolation function: e -> relative flux at (1e^{t00}, 1e3)
-    """
+        Extrapolates attenuated spectrum to the region where nuFate cannot perform calculations
+        @param lg_energy: lg of neutrino energy
+        @param spectra_ratio: relative attenuated spectrum
+        @param t00: low-energy zero attenuation border
+        @return: extrapolation function: e -> relative flux at (1e^{t00}, 1e3)
+        """
     # estimate derivatives
     t0, t1, t2 = lg_energy[0:3]
     f0, f1, f2 = np.log10(spectra_ratio[0:3])
 
     g0 = f0
-    g1 = (f1 - f0) / (t1 - t0)
-    g2 = (f2 - 2*f1 + f0) / (t1 - t0)**2
+    g1 = (2 * f1 - 0.5 * f2 - 1.5 * f0) / (t1 - t0)
+    g2 = (f2 - 2 * f1 + f0) / (t1 - t0) ** 2
+
+    g0 *= (t0 - t00)**(-4)
+    g1 *= (t0 - t00)**(-3)
+    g2 *= (t0 - t00)**(-2)
 
     # find a, b, c parameters
-    matrix = np.array([[(t0 - t00)**2 * t0**2, (t0 - t00)**2 * t0, (t0 - t00)**2],
-                       [2 * (t0 - t00) * (2 * t0 - t00) * t0, (t0 - t00) * (3*t0 - t00), 2*(t0 - t00)],
-                       [3 * (2*t0 - t00)**2 - t00**2, 6 * t0 - t00, 2]])
+    matrix = np.array([[3, -2, 0.5],
+                       [-8*t0 + 2*t00, 5*t0 - t00, -t0],
+                       [6*t0**2 - 4*t0*t00 + t00**2, -3*t0**2 + t0*t00, t0**2/2]])
     g_vector = np.array([g0, g1, g2])
 
-    abc_vector = np.linalg.solve(matrix, g_vector)
+    abc_vector = matrix.dot(g_vector)
     a, b, c = abc_vector
 
     # set extrapolation_function
     def extrapolation_function(e):
         t = np.log10(e)
-        return 10**((t - t00)**2 * (a * t**2 + b * t + c))
+        return 10 ** ((t - t00) ** 2 * (a * t ** 2 + b * t + c))
 
     return extrapolation_function
 

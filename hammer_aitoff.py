@@ -108,6 +108,7 @@ def draw_hammer_aitoff_ext():
     plt.scatter(x, y, 0.3, color='black', alpha=.8, label='Galactic plane')
 
     # Galactic center
+    """
     source: ExtendedSource = galactic_center(num=1000)
 
     d_c, ra_c = np.rad2deg(source.equatorial_dec_grid), rad_to_hours(source.equatorial_ra_grid)
@@ -118,30 +119,32 @@ def draw_hammer_aitoff_ext():
         x_s_i, y_s_i = coordinates_conversion(12 - ra_c[i], d_c[i])
         x_s.append(x_s_i), y_s.append(y_s_i)
     plt.scatter(x_s, y_s, 3, color='orange', alpha=0.2, label='Galactic center')
+    """
 
     # depict the sources
-    # sources = get_sources("data/source_table.csv")
-    #
-    # for i, s in enumerate(sources):
-    #     if i > 0 and s.name[:-3] == sources[i - 1].name[:-3]:
-    #         continue
-    #     if i < len(sources) - 1 and s.name[:-3] == sources[i + 1].name[:-3]:
-    #         name = s.name[:-3]
-    #     else:
-    #         name = s.name
-    #     x, y = coordinates_conversion(12 - s.right_ascension, s.declination)
-    #     # print(x, y)
-    #     plt.scatter(x, y, label=name)
-    #     print(s.name)
-    #     if s.name == "Vela Jr" or s.name == "NGC 1068":
-    #         plt.text(x - 0.15, y - 0.15, name, fontsize=12)
-    #     elif s.name == "MGRO J1908+06 (1)" or s.name == "Vela X":
-    #         plt.text(x + 0.1, y - 0.03, name, fontsize=12)
-    #     else:
-    #         plt.text(x - 0., y + 0.05, name, fontsize=12)
+    sources = get_sources("data/source_table.csv")
+
+    for i, s in enumerate(sources):
+        if i > 0 and s.name[:-3] == sources[i - 1].name[:-3]:
+            continue
+        if i < len(sources) - 1 and s.name[:-3] == sources[i + 1].name[:-3]:
+            name = s.name[:-3]
+        else:
+            name = s.name
+        x, y = coordinates_conversion(12 - s.right_ascension, s.declination)
+        # print(x, y)
+        plt.scatter(x, y, label=name)
+        print(s.name)
+        if s.name == "Vela Jr" or s.name == "NGC 1068":
+            plt.text(x - 0.15, y - 0.15, name, fontsize=12)
+        elif s.name == "MGRO J1908+06 (1)" or s.name == "Vela X":
+            plt.text(x + 0.1, y - 0.03, name, fontsize=12)
+        else:
+            plt.text(x - 0., y + 0.05, name, fontsize=12)
 
     plt.axis('off')
     plt.tight_layout()
+    plt.savefig("point-like.pdf")
     plt.show()
 
     return

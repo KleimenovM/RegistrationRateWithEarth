@@ -52,7 +52,6 @@ def get_relative_flux(initial_flux: np.ndarray, theta: np.ndarray,
             = calculate_single_theta_flux(initial_flux, t_i,
                                           telescope, tf, nuFate_method=nuFate_method,
                                           mid_border=mid_border, low_border=low_border)
-    plt.show()
 
     total_flux = total_flux_matrix.mean(axis=0)
 

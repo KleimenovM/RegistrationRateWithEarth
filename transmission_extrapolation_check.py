@@ -12,7 +12,7 @@ def extrapolation_check():
     angle = -np.pi / 3  # zenith -60 deg
     lg_e0 = np.linspace(3, 10, 200)
     e0 = 10**lg_e0
-    gamma = 2
+    gamma = 1.5
 
     initial_flux = e0 ** (-gamma)
 
